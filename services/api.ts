@@ -23,7 +23,21 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
-    throw new Error(`Erro na comunicação com a API (${response.status}).`);
+    let mensagem = `Erro na comunicação com a API (${response.status}).`;
+
+    try {
+      const erro = await response.json();
+
+      mensagem = erro.message ?? erro.mensagem ?? erro.detail ?? mensagem;
+    } catch {
+      // A API não retornou um JSON válido.
+    }
+
+    throw new Error(mensagem);
+  }
+
+  if (response.status === 204) {
+    return null;
   }
 
   return await response.json();

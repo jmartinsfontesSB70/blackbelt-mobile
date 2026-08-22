@@ -17,70 +17,72 @@ import {
   formatarTelefone,
 } from "@/utils/masks";
 
-import { excluirAluno } from "@/services/alunoService";
 import { apiFetch } from "@/services/api";
+import { excluirProfessor } from "@/services/professorService";
 
-export default function AlunoDetalhesScreen() {
+export default function ProfessorDetalhesScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [aluno, setAluno] = useState<any>(null);
+  const [professor, setProfessor] = useState<any>(null);
   const [mensagem, setMensagem] = useState("");
   const [excluindo, setExcluindo] = useState(false);
 
   useEffect(() => {
-    carregarAluno();
+    carregarProfessor();
   }, [id]);
 
-  async function carregarAluno() {
-    console.log("📡 GET DETALHE DO ALUNO:", id);
-
+  async function carregarProfessor() {
     try {
       setMensagem("");
 
-      const resposta = await apiFetch(`/alunos/${id}`);
+      const resposta = await apiFetch(`/professores/${id}`);
 
-      setAluno(resposta);
+      setProfessor(resposta);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar aluno.");
+        setMensagem("Erro ao carregar professor.");
       }
     }
   }
 
   function confirmarExclusao() {
-    Alert.alert("Excluir aluno", `Deseja realmente excluir ${aluno.nome}?`, [
-      {
-        text: "Cancelar",
-        style: "cancel",
-      },
-      {
-        text: "Excluir",
-        style: "destructive",
-        onPress: executarExclusao,
-      },
-    ]);
+    Alert.alert(
+      "Excluir professor",
+      `Deseja realmente excluir ${professor.nome}?`,
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: executarExclusao,
+        },
+      ],
+    );
   }
 
   async function executarExclusao() {
     try {
       setExcluindo(true);
 
-      await excluirAluno(Number(id));
+      await excluirProfessor(Number(id));
 
-      Alert.alert("Sucesso", "Aluno excluído com sucesso!", [
+      Alert.alert("Sucesso", "Professor excluído com sucesso!", [
         {
           text: "OK",
-          onPress: () => router.dismissTo("/alunos"),
+          onPress: () => router.dismissTo("/professores"),
         },
       ]);
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert("Não foi possível excluir", error.message);
       } else {
-        Alert.alert("Erro", "Não foi possível excluir o aluno.");
+        Alert.alert("Erro", "Não foi possível excluir o professor.");
       }
     } finally {
       setExcluindo(false);
@@ -97,12 +99,12 @@ export default function AlunoDetalhesScreen() {
     );
   }
 
-  if (!aluno) {
+  if (!professor) {
     return (
       <View style={styles.carregando}>
         <ActivityIndicator size="large" />
 
-        <Text style={styles.carregandoTexto}>Carregando aluno...</Text>
+        <Text style={styles.carregandoTexto}>Carregando professor...</Text>
       </View>
     );
   }
@@ -111,7 +113,7 @@ export default function AlunoDetalhesScreen() {
     <>
       <Stack.Screen
         options={{
-          title: aluno.nome,
+          title: professor.nome,
         }}
       />
 
@@ -124,28 +126,28 @@ export default function AlunoDetalhesScreen() {
         <View style={styles.cabecalho}>
           <View style={styles.avatar}>
             <Text style={styles.avatarTexto}>
-              {aluno.nome?.charAt(0).toUpperCase()}
+              {professor.nome?.charAt(0).toUpperCase()}
             </Text>
           </View>
 
           <View style={styles.cabecalhoInfo}>
-            <Text style={styles.nome}>{aluno.nome}</Text>
+            <Text style={styles.nome}>{professor.nome}</Text>
 
             <View
               style={[
                 styles.status,
-                aluno.ativo ? styles.statusAtivo : styles.statusInativo,
+                professor.ativo ? styles.statusAtivo : styles.statusInativo,
               ]}
             >
               <Text
                 style={[
                   styles.statusTexto,
-                  aluno.ativo
+                  professor.ativo
                     ? styles.statusTextoAtivo
                     : styles.statusTextoInativo,
                 ]}
               >
-                {aluno.ativo ? "ATIVO" : "INATIVO"}
+                {professor.ativo ? "ATIVO" : "INATIVO"}
               </Text>
             </View>
           </View>
@@ -159,7 +161,7 @@ export default function AlunoDetalhesScreen() {
             <Text style={styles.label}>CPF</Text>
 
             <Text style={styles.valor}>
-              {aluno.cpf ? formatarCpf(aluno.cpf) : "Não informado"}
+              {professor.cpf ? formatarCpf(professor.cpf) : "Não informado"}
             </Text>
           </View>
 
@@ -167,8 +169,8 @@ export default function AlunoDetalhesScreen() {
             <Text style={styles.label}>Data de nascimento</Text>
 
             <Text style={styles.valor}>
-              {aluno.dataNascimento
-                ? formatarDataExibicao(aluno.dataNascimento)
+              {professor.dataNascimento
+                ? formatarDataExibicao(professor.dataNascimento)
                 : "Não informado"}
             </Text>
           </View>
@@ -177,8 +179,8 @@ export default function AlunoDetalhesScreen() {
             <Text style={styles.label}>Telefone</Text>
 
             <Text style={styles.valor}>
-              {aluno.telefone
-                ? formatarTelefone(aluno.telefone)
+              {professor.telefone
+                ? formatarTelefone(professor.telefone)
                 : "Não informado"}
             </Text>
           </View>
@@ -186,7 +188,34 @@ export default function AlunoDetalhesScreen() {
           <View style={styles.campo}>
             <Text style={styles.label}>E-mail</Text>
 
-            <Text style={styles.valor}>{aluno.email || "Não informado"}</Text>
+            <Text style={styles.valor}>
+              {professor.email || "Não informado"}
+            </Text>
+          </View>
+        </View>
+
+        {/* Dados profissionais */}
+        <View style={styles.card}>
+          <Text style={styles.secao}>Dados profissionais</Text>
+
+          <View style={styles.campo}>
+            <Text style={styles.label}>Data de contratação</Text>
+
+            <Text style={styles.valor}>
+              {professor.dataContratacao
+                ? formatarDataExibicao(professor.dataContratacao)
+                : "Não informado"}
+            </Text>
+          </View>
+
+          <View style={styles.campo}>
+            <Text style={styles.label}>Valor da hora aula</Text>
+
+            <Text style={styles.valor}>
+              {professor.valorHoraAula != null
+                ? `R$ ${Number(professor.valorHoraAula).toFixed(2).replace(".", ",")}`
+                : "Não informado"}
+            </Text>
           </View>
         </View>
 
@@ -194,27 +223,27 @@ export default function AlunoDetalhesScreen() {
         <View style={styles.card}>
           <Text style={styles.secao}>Endereço</Text>
 
-          {aluno.endereco ? (
+          {professor.endereco ? (
             <>
               <View style={styles.campo}>
                 <Text style={styles.label}>Rua</Text>
 
                 <Text style={styles.valor}>
-                  {aluno.endereco.rua}, {aluno.endereco.numero}
+                  {professor.endereco.rua}, {professor.endereco.numero}
                 </Text>
               </View>
 
               <View style={styles.campo}>
                 <Text style={styles.label}>Bairro</Text>
 
-                <Text style={styles.valor}>{aluno.endereco.bairro}</Text>
+                <Text style={styles.valor}>{professor.endereco.bairro}</Text>
               </View>
 
               <View style={styles.campo}>
                 <Text style={styles.label}>Cidade / Estado</Text>
 
                 <Text style={styles.valor}>
-                  {aluno.endereco.cidade} - {aluno.endereco.estado}
+                  {professor.endereco.cidade} - {professor.endereco.estado}
                 </Text>
               </View>
 
@@ -222,18 +251,18 @@ export default function AlunoDetalhesScreen() {
                 <Text style={styles.label}>CEP</Text>
 
                 <Text style={styles.valor}>
-                  {aluno.endereco.cep
-                    ? formatarCep(aluno.endereco.cep)
+                  {professor.endereco.cep
+                    ? formatarCep(professor.endereco.cep)
                     : "Não informado"}
                 </Text>
               </View>
 
-              {aluno.endereco.pontoReferencia ? (
+              {professor.endereco.pontoReferencia ? (
                 <View style={styles.campo}>
                   <Text style={styles.label}>Ponto de referência</Text>
 
                   <Text style={styles.valor}>
-                    {aluno.endereco.pontoReferencia}
+                    {professor.endereco.pontoReferencia}
                   </Text>
                 </View>
               ) : null}
@@ -247,7 +276,7 @@ export default function AlunoDetalhesScreen() {
         <View style={styles.acoes}>
           <Pressable
             style={styles.botaoEditar}
-            onPress={() => router.push(`/aluno/editar/${id}`)}
+            onPress={() => router.push(`/professor/editar/${id}`)}
             disabled={excluindo}
           >
             <Text style={styles.botaoEditarTexto}>✏️ Editar</Text>

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 type AlunoCardProps = {
   nome: string;
@@ -8,29 +8,33 @@ type AlunoCardProps = {
 
 export default function AlunoCard({ nome, cpf, onPress }: AlunoCardProps) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <Pressable style={styles.card} onPress={onPress}>
       <Text style={styles.nome}>{nome}</Text>
 
-      <Text style={styles.cpf}>CPF: {cpf}</Text>
-    </TouchableOpacity>
+      <Text style={styles.dado}>CPF: {cpf || "Não informado"}</Text>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#f2f2f2",
-    borderRadius: 10,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 10,
+    elevation: 2,
   },
 
   nome: {
     fontSize: 17,
     fontWeight: "bold",
+    color: "#111827",
     marginBottom: 6,
   },
 
-  cpf: {
+  dado: {
     fontSize: 14,
+    color: "#6b7280",
+    marginTop: 2,
   },
 });

@@ -16,7 +16,10 @@ export default function MenuScreen() {
 
       <MenuItem titulo="Alunos" onPress={() => router.push("/alunos")} />
 
-      <MenuItem titulo="Professores" onPress={() => {}} />
+      <MenuItem
+        titulo="Professores"
+        onPress={() => router.push("/professores")}
+      />
 
       <MenuItem titulo="Modalidades" onPress={() => {}} />
     </View>

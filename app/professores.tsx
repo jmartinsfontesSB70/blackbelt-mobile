@@ -10,15 +10,16 @@ import {
   View,
 } from "react-native";
 
-import { formatarCpf } from "@/utils/masks";
+import ProfessorCard from "@/components/ProfessorCard";
 
-import AlunoCard from "@/components/AlunoCard";
-import { listarAlunos } from "@/services/alunoService";
+import { formatarCpf, formatarTelefone } from "@/utils/masks";
 
-export default function AlunosScreen() {
+import { listarProfessores } from "@/services/professorService";
+
+export default function ProfessoresScreen() {
   const router = useRouter();
 
-  const [alunos, setAlunos] = useState<any[]>([]);
+  const [professores, setProfessores] = useState<any[]>([]);
   const [mensagem, setMensagem] = useState("");
   const [pagina, setPagina] = useState(0);
   const [temMais, setTemMais] = useState(true);
@@ -29,18 +30,18 @@ export default function AlunosScreen() {
       setCarregando(true);
       setMensagem("");
 
-      const resposta = await listarAlunos(0, 10);
+      const resposta = await listarProfessores(0, 10);
 
-      const novosAlunos = resposta.content ?? resposta;
+      const novosProfessores = resposta.content ?? resposta;
 
-      setAlunos(novosAlunos);
+      setProfessores(novosProfessores);
       setPagina(0);
       setTemMais(!resposta.last);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar alunos.");
+        setMensagem("Erro ao carregar professores.");
       }
     } finally {
       setCarregando(false);
@@ -63,11 +64,14 @@ export default function AlunosScreen() {
 
       const proximaPagina = pagina + 1;
 
-      const resposta = await listarAlunos(proximaPagina, 10);
+      const resposta = await listarProfessores(proximaPagina, 10);
 
-      const novosAlunos = resposta.content ?? resposta;
+      const novosProfessores = resposta.content ?? resposta;
 
-      setAlunos((alunosAtuais) => [...alunosAtuais, ...novosAlunos]);
+      setProfessores((professoresAtuais) => [
+        ...professoresAtuais,
+        ...novosProfessores,
+      ]);
 
       setPagina(proximaPagina);
       setTemMais(!resposta.last);
@@ -75,7 +79,7 @@ export default function AlunosScreen() {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar alunos.");
+        setMensagem("Erro ao carregar professores.");
       }
     } finally {
       setCarregando(false);
@@ -85,13 +89,13 @@ export default function AlunosScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.cabecalho}>
-        <Text style={styles.titulo}>Alunos</Text>
+        <Text style={styles.titulo}>Professores</Text>
 
         <Pressable
           style={styles.botaoNovo}
-          onPress={() => router.push("/aluno/novo")}
+          onPress={() => router.push("/professor/novo")}
         >
-          <Text style={styles.botaoNovoTexto}>+ Novo aluno</Text>
+          <Text style={styles.botaoNovoTexto}>+ Novo professor</Text>
         </Pressable>
       </View>
 
@@ -99,13 +103,15 @@ export default function AlunosScreen() {
         <Text style={styles.mensagem}>{mensagem}</Text>
       ) : (
         <FlatList
-          data={alunos}
-          keyExtractor={(aluno) => aluno.id.toString()}
+          data={professores}
+          keyExtractor={(professor) => professor.id.toString()}
           renderItem={({ item }) => (
-            <AlunoCard
+            <ProfessorCard
               nome={item.nome}
               cpf={item.cpf ? formatarCpf(item.cpf) : ""}
-              onPress={() => router.push(`/aluno/${item.id}`)}
+              telefone={item.telefone ? formatarTelefone(item.telefone) : ""}
+              ativo={item.ativo}
+              onPress={() => router.push(`/professor/${item.id}`)}
             />
           )}
           onEndReached={carregarProximaPagina}
