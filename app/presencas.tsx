@@ -10,16 +10,17 @@ import {
   View,
 } from "react-native";
 
-import AlunoCard from "@/components/AlunoCard";
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
-import { listarAlunos } from "@/services/alunoService";
-import { formatarCpf } from "@/utils/masks";
 
-export default function AlunosScreen() {
+import PresencaCard from "@/components/PresencaCard";
+
+import { listarPresencas } from "@/services/presencaService";
+
+export default function PresencasScreen() {
   const router = useRouter();
 
-  const [alunos, setAlunos] = useState<any[]>([]);
+  const [presencas, setPresencas] = useState<any[]>([]);
   const [mensagem, setMensagem] = useState("");
   const [pagina, setPagina] = useState(0);
   const [temMais, setTemMais] = useState(true);
@@ -30,18 +31,18 @@ export default function AlunosScreen() {
       setCarregando(true);
       setMensagem("");
 
-      const resposta = await listarAlunos(0, 10);
+      const resposta = await listarPresencas(0, 10);
 
-      const novosAlunos = resposta.content ?? resposta;
+      const novasPresencas = resposta.content ?? resposta;
 
-      setAlunos(novosAlunos);
+      setPresencas(novasPresencas);
       setPagina(0);
       setTemMais(!resposta.last);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar alunos.");
+        setMensagem("Erro ao carregar presenças.");
       }
     } finally {
       setCarregando(false);
@@ -64,11 +65,14 @@ export default function AlunosScreen() {
 
       const proximaPagina = pagina + 1;
 
-      const resposta = await listarAlunos(proximaPagina, 10);
+      const resposta = await listarPresencas(proximaPagina, 10);
 
-      const novosAlunos = resposta.content ?? resposta;
+      const novasPresencas = resposta.content ?? resposta;
 
-      setAlunos((alunosAtuais) => [...alunosAtuais, ...novosAlunos]);
+      setPresencas((presencasAtuais) => [
+        ...presencasAtuais,
+        ...novasPresencas,
+      ]);
 
       setPagina(proximaPagina);
       setTemMais(!resposta.last);
@@ -76,7 +80,7 @@ export default function AlunosScreen() {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar alunos.");
+        setMensagem("Erro ao carregar presenças.");
       }
     } finally {
       setCarregando(false);
@@ -84,32 +88,45 @@ export default function AlunosScreen() {
   }
 
   return (
-    <RotaPermissao permissao="ALUNO_LISTAR">
+    <RotaPermissao permissao="PRESENCA_LISTAR">
       <View style={styles.container}>
         <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Alunos</Text>
+          <Text style={styles.titulo}>Presenças</Text>
 
-          <Permissao permissao="ALUNO_CRIAR" esconder>
-            <Pressable
-              style={styles.botaoNovo}
-              onPress={() => router.push("/aluno/novo")}
-            >
-              <Text style={styles.botaoNovoTexto}>+ Novo aluno</Text>
-            </Pressable>
-          </Permissao>
+          <View style={styles.botoesNovo}>
+            <Permissao permissao="PRESENCA_CRIAR" esconder>
+              <Pressable
+                style={styles.botaoNovo}
+                onPress={() => router.push("/presenca/chamada")}
+              >
+                <Text style={styles.botaoNovoTexto}>+ Nova chamada</Text>
+              </Pressable>
+            </Permissao>
+
+            <Permissao permissao="PRESENCA_CRIAR" esconder>
+              <Pressable
+                style={styles.botaoNovo}
+                onPress={() => router.push("/presenca/novo")}
+              >
+                <Text style={styles.botaoNovoTexto}>+ Nova presença</Text>
+              </Pressable>
+            </Permissao>
+          </View>
         </View>
 
         {mensagem ? (
           <Text style={styles.mensagem}>{mensagem}</Text>
         ) : (
           <FlatList
-            data={alunos}
-            keyExtractor={(aluno) => aluno.id.toString()}
+            data={presencas}
+            keyExtractor={(presenca) => presenca.id.toString()}
             renderItem={({ item }) => (
-              <AlunoCard
-                nome={item.nome}
-                cpf={item.cpf ? formatarCpf(item.cpf) : ""}
-                onPress={() => router.push(`/aluno/${item.id}`)}
+              <PresencaCard
+                alunoNome={item.alunoNome}
+                turmaNome={item.turmaNome}
+                data={item.data}
+                presente={item.presente}
+                onPress={() => router.push(`/presenca/${item.id}`)}
               />
             )}
             onEndReached={carregarProximaPagina}
@@ -143,21 +160,30 @@ const styles = StyleSheet.create({
   },
 
   titulo: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "bold",
     color: "#111827",
+    marginRight: 8,
+  },
+
+  botoesNovo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    flexShrink: 1,
   },
 
   botaoNovo: {
     backgroundColor: "#111827",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
+    flexShrink: 1,
   },
 
   botaoNovoTexto: {
     color: "#ffffff",
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "bold",
   },
 

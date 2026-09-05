@@ -5,8 +5,8 @@ const API_URL = "http://192.168.1.4:8080/api/v1";
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const token = await AsyncStorage.getItem("token");
 
-  const headers = {
-    ...options.headers,
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
   };
 
   if (options.body && !headers["Content-Type"]) {
@@ -23,6 +23,11 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
+    // Login com usuário ou senha inválidos
+    if (endpoint === "/login" && response.status === 401) {
+      throw new Error("Usuário ou senha não conferem.");
+    }
+
     let mensagem = `Erro na comunicação com a API (${response.status}).`;
 
     try {

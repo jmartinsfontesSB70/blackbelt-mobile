@@ -13,47 +13,57 @@ import {
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
 
-import {
-  formatarCep,
-  formatarCpf,
-  formatarDataExibicao,
-  formatarTelefone,
-} from "@/utils/masks";
+import { buscarUsuario, excluirUsuario } from "@/services/usuarioService";
 
-import { buscarProfessor, excluirProfessor } from "@/services/professorService";
-
-export default function ProfessorDetalhesScreen() {
+export default function UsuarioDetalhesScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [professor, setProfessor] = useState<any>(null);
+  const [usuario, setUsuario] = useState<any>(null);
   const [mensagem, setMensagem] = useState("");
   const [excluindo, setExcluindo] = useState(false);
 
   useEffect(() => {
-    carregarProfessor();
+    carregarUsuario();
   }, [id]);
 
-  async function carregarProfessor() {
+  async function carregarUsuario() {
     try {
       setMensagem("");
 
-      const resposta = await buscarProfessor(id);
+      const resposta = await buscarUsuario(id);
 
-      setProfessor(resposta);
+      setUsuario(resposta);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar professor.");
+        setMensagem("Erro ao carregar usuário.");
       }
     }
   }
 
+  function usuarioProtegido() {
+    return usuario?.username?.toLowerCase() === "admin";
+  }
+
   function confirmarExclusao() {
+    if (!usuario) {
+      return;
+    }
+
+    if (usuarioProtegido()) {
+      Alert.alert(
+        "Usuário protegido",
+        "O usuário admin é protegido e não pode ser excluído.",
+      );
+
+      return;
+    }
+
     Alert.alert(
-      "Excluir professor",
-      `Deseja realmente excluir ${professor.nome}?`,
+      "Excluir usuário",
+      `Deseja realmente excluir o usuário "${usuario.username}"?`,
       [
         {
           text: "Cancelar",
@@ -69,22 +79,31 @@ export default function ProfessorDetalhesScreen() {
   }
 
   async function executarExclusao() {
+    if (usuarioProtegido()) {
+      Alert.alert(
+        "Usuário protegido",
+        "O usuário admin é protegido e não pode ser excluído.",
+      );
+
+      return;
+    }
+
     try {
       setExcluindo(true);
 
-      await excluirProfessor(Number(id));
+      await excluirUsuario(Number(id));
 
-      Alert.alert("Sucesso", "Professor excluído com sucesso!", [
+      Alert.alert("Sucesso", "Usuário excluído com sucesso!", [
         {
           text: "OK",
-          onPress: () => router.dismissTo("/professores"),
+          onPress: () => router.dismissTo("/usuarios"),
         },
       ]);
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert("Não foi possível excluir", error.message);
       } else {
-        Alert.alert("Erro", "Não foi possível excluir o professor.");
+        Alert.alert("Erro", "Não foi possível excluir o usuário.");
       }
     } finally {
       setExcluindo(false);
@@ -93,7 +112,7 @@ export default function ProfessorDetalhesScreen() {
 
   if (mensagem) {
     return (
-      <RotaPermissao permissao="PROFESSOR_LISTAR">
+      <RotaPermissao permissao="USUARIO_LISTAR">
         <View style={styles.erroContainer}>
           <Text style={styles.erroTitulo}>Ops!</Text>
 
@@ -103,24 +122,26 @@ export default function ProfessorDetalhesScreen() {
     );
   }
 
-  if (!professor) {
+  if (!usuario) {
     return (
-      <RotaPermissao permissao="PROFESSOR_LISTAR">
+      <RotaPermissao permissao="USUARIO_LISTAR">
         <View style={styles.carregando}>
           <ActivityIndicator size="large" />
 
-          <Text style={styles.carregandoTexto}>Carregando professor...</Text>
+          <Text style={styles.carregandoTexto}>Carregando usuário...</Text>
         </View>
       </RotaPermissao>
     );
   }
 
+  const protegido = usuarioProtegido();
+
   return (
-    <RotaPermissao permissao="PROFESSOR_LISTAR">
+    <RotaPermissao permissao="USUARIO_LISTAR">
       <>
         <Stack.Screen
           options={{
-            title: professor.nome,
+            title: "Usuário",
           }}
         />
 
@@ -130,186 +151,136 @@ export default function ProfessorDetalhesScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Cabeçalho */}
+
           <View style={styles.cabecalho}>
             <View style={styles.avatar}>
               <Text style={styles.avatarTexto}>
-                {professor.nome?.charAt(0).toUpperCase()}
+                {usuario.username?.charAt(0).toUpperCase()}
               </Text>
             </View>
 
             <View style={styles.cabecalhoInfo}>
-              <Text style={styles.nome}>{professor.nome}</Text>
+              <Text style={styles.nome}>
+                {usuario.username || "Usuário não informado"}
+              </Text>
 
               <View
                 style={[
                   styles.status,
-                  professor.ativo ? styles.statusAtivo : styles.statusInativo,
+                  usuario.ativo ? styles.statusAtivo : styles.statusInativo,
                 ]}
               >
                 <Text
                   style={[
                     styles.statusTexto,
-                    professor.ativo
+                    usuario.ativo
                       ? styles.statusTextoAtivo
                       : styles.statusTextoInativo,
                   ]}
                 >
-                  {professor.ativo ? "ATIVO" : "INATIVO"}
+                  {usuario.ativo ? "ATIVO" : "INATIVO"}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* Dados pessoais */}
+          {/* Aviso de proteção */}
+
+          {protegido && (
+            <View style={styles.avisoProtegido}>
+              <Text style={styles.avisoIcone}>🔒</Text>
+
+              <View style={styles.avisoConteudo}>
+                <Text style={styles.avisoTitulo}>Usuário protegido</Text>
+
+                <Text style={styles.avisoTexto}>
+                  O usuário admin é protegido e não pode ser alterado ou
+                  excluído.
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Dados do usuário */}
+
           <View style={styles.card}>
-            <Text style={styles.secao}>Dados pessoais</Text>
+            <Text style={styles.secao}>Dados do usuário</Text>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>CPF</Text>
+              <Text style={styles.label}>Nome de usuário</Text>
 
               <Text style={styles.valor}>
-                {professor.cpf ? formatarCpf(professor.cpf) : "Não informado"}
+                {usuario.username || "Não informado"}
               </Text>
             </View>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>Data de nascimento</Text>
+              <Text style={styles.label}>Perfil</Text>
 
               <Text style={styles.valor}>
-                {professor.dataNascimento
-                  ? formatarDataExibicao(professor.dataNascimento)
-                  : "Não informado"}
-              </Text>
-            </View>
-
-            <View style={styles.campo}>
-              <Text style={styles.label}>Telefone</Text>
-
-              <Text style={styles.valor}>
-                {professor.telefone
-                  ? formatarTelefone(professor.telefone)
-                  : "Não informado"}
-              </Text>
-            </View>
-
-            <View style={styles.campo}>
-              <Text style={styles.label}>E-mail</Text>
-
-              <Text style={styles.valor}>
-                {professor.email || "Não informado"}
+                {usuario.perfilNome || "Não informado"}
               </Text>
             </View>
           </View>
 
-          {/* Dados profissionais */}
+          {/* Situação */}
+
           <View style={styles.card}>
-            <Text style={styles.secao}>Dados profissionais</Text>
+            <Text style={styles.secao}>Situação</Text>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>Data de contratação</Text>
+              <Text style={styles.label}>Status do usuário</Text>
 
-              <Text style={styles.valor}>
-                {professor.dataContratacao
-                  ? formatarDataExibicao(professor.dataContratacao)
-                  : "Não informado"}
+              <Text
+                style={[
+                  styles.valor,
+                  usuario.ativo ? styles.valorAtivo : styles.valorInativo,
+                ]}
+              >
+                {usuario.ativo ? "Ativo" : "Inativo"}
               </Text>
             </View>
-
-            <View style={styles.campo}>
-              <Text style={styles.label}>Valor da hora aula</Text>
-
-              <Text style={styles.valor}>
-                {professor.valorHoraAula != null
-                  ? `R$ ${Number(professor.valorHoraAula)
-                      .toFixed(2)
-                      .replace(".", ",")}`
-                  : "Não informado"}
-              </Text>
-            </View>
-          </View>
-
-          {/* Endereço */}
-          <View style={styles.card}>
-            <Text style={styles.secao}>Endereço</Text>
-
-            {professor.endereco ? (
-              <>
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Rua</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.rua}, {professor.endereco.numero}
-                  </Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Bairro</Text>
-
-                  <Text style={styles.valor}>{professor.endereco.bairro}</Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Cidade / Estado</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.cidade} - {professor.endereco.estado}
-                  </Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>CEP</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.cep
-                      ? formatarCep(professor.endereco.cep)
-                      : "Não informado"}
-                  </Text>
-                </View>
-
-                {professor.endereco.pontoReferencia ? (
-                  <View style={styles.campo}>
-                    <Text style={styles.label}>Ponto de referência</Text>
-
-                    <Text style={styles.valor}>
-                      {professor.endereco.pontoReferencia}
-                    </Text>
-                  </View>
-                ) : null}
-              </>
-            ) : (
-              <Text style={styles.semEndereco}>Endereço não informado.</Text>
-            )}
           </View>
 
           {/* Ações */}
-          <View style={styles.acoes}>
-            <Permissao permissao="PROFESSOR_EDITAR" esconder>
-              <Pressable
-                style={styles.botaoEditar}
-                onPress={() => router.push(`/professor/editar/${id}`)}
-                disabled={excluindo}
-              >
-                <Text style={styles.botaoEditarTexto}>✏️ Editar</Text>
-              </Pressable>
-            </Permissao>
 
-            <Permissao permissao="PROFESSOR_EXCLUIR" esconder>
-              <Pressable
-                style={[
-                  styles.botaoExcluir,
-                  excluindo && styles.botaoDesabilitado,
-                ]}
-                onPress={confirmarExclusao}
-                disabled={excluindo}
-              >
-                {excluindo ? (
-                  <ActivityIndicator />
-                ) : (
-                  <Text style={styles.botaoExcluirTexto}>🗑️ Excluir</Text>
-                )}
-              </Pressable>
-            </Permissao>
-          </View>
+          {!protegido && (
+            <View style={styles.acoes}>
+              <Permissao permissao="USUARIO_EDITAR" esconder>
+                <Pressable
+                  style={styles.botaoEditar}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/usuarios/editar/[id]",
+                      params: {
+                        id: String(id),
+                      },
+                    })
+                  }
+                  disabled={excluindo}
+                >
+                  <Text style={styles.botaoEditarTexto}>✏️ Editar</Text>
+                </Pressable>
+              </Permissao>
+
+              <Permissao permissao="USUARIO_EXCLUIR" esconder>
+                <Pressable
+                  style={[
+                    styles.botaoExcluir,
+                    excluindo && styles.botaoDesabilitado,
+                  ]}
+                  onPress={confirmarExclusao}
+                  disabled={excluindo}
+                >
+                  {excluindo ? (
+                    <ActivityIndicator />
+                  ) : (
+                    <Text style={styles.botaoExcluirTexto}>🗑️ Excluir</Text>
+                  )}
+                </Pressable>
+              </Permissao>
+            </View>
+          )}
 
           <Text style={styles.rodape}>BlackBelt</Text>
         </ScrollView>
@@ -390,6 +361,39 @@ const styles = StyleSheet.create({
     color: "#991b1b",
   },
 
+  avisoProtegido: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fef3c7",
+    borderWidth: 1,
+    borderColor: "#fcd34d",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+  },
+
+  avisoIcone: {
+    fontSize: 22,
+    marginRight: 12,
+  },
+
+  avisoConteudo: {
+    flex: 1,
+  },
+
+  avisoTitulo: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#92400e",
+    marginBottom: 3,
+  },
+
+  avisoTexto: {
+    fontSize: 12,
+    color: "#92400e",
+    lineHeight: 17,
+  },
+
   card: {
     backgroundColor: "#ffffff",
     borderRadius: 16,
@@ -430,10 +434,14 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
 
-  semEndereco: {
-    color: "#6b7280",
-    fontSize: 15,
-    marginTop: 8,
+  valorAtivo: {
+    color: "#166534",
+    fontWeight: "600",
+  },
+
+  valorInativo: {
+    color: "#991b1b",
+    fontWeight: "600",
   },
 
   acoes: {

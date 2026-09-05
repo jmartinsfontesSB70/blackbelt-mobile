@@ -27,3 +27,17 @@ export async function excluirProfessor(id: number) {
     method: "DELETE",
   });
 }
+
+export async function listarProfessoresParaSelecao() {
+  const primeiraPagina = await listarProfessores(0, 10);
+
+  const professores = [...primeiraPagina.content];
+
+  for (let pagina = 1; pagina < primeiraPagina.totalPages; pagina++) {
+    const dadosPagina = await listarProfessores(pagina, 10);
+
+    professores.push(...dadosPagina.content);
+  }
+
+  return professores;
+}

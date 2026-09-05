@@ -15,3 +15,7 @@ export async function fazerLogin(username: string, password: string) {
 
   return resposta;
 }
+
+export async function logout(): Promise<void> {
+  await AsyncStorage.removeItem("token");
+}

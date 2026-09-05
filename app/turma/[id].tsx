@@ -13,78 +13,75 @@ import {
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
 
-import {
-  formatarCep,
-  formatarCpf,
-  formatarDataExibicao,
-  formatarTelefone,
-} from "@/utils/masks";
+import { buscarTurma, excluirTurma } from "@/services/turmaService";
 
-import { buscarProfessor, excluirProfessor } from "@/services/professorService";
-
-export default function ProfessorDetalhesScreen() {
+export default function TurmaDetalhesScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [professor, setProfessor] = useState<any>(null);
+  const [turma, setTurma] = useState<any>(null);
   const [mensagem, setMensagem] = useState("");
   const [excluindo, setExcluindo] = useState(false);
 
   useEffect(() => {
-    carregarProfessor();
+    carregarTurma();
   }, [id]);
 
-  async function carregarProfessor() {
+  async function carregarTurma() {
     try {
       setMensagem("");
 
-      const resposta = await buscarProfessor(id);
+      const turma = await buscarTurma(id);
 
-      setProfessor(resposta);
+      setTurma(turma);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar professor.");
+        setMensagem("Erro ao carregar turma.");
       }
     }
   }
 
+  function formatarHorario(horario?: string) {
+    if (!horario) {
+      return "Não informado";
+    }
+
+    return horario.substring(0, 5);
+  }
+
   function confirmarExclusao() {
-    Alert.alert(
-      "Excluir professor",
-      `Deseja realmente excluir ${professor.nome}?`,
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: executarExclusao,
-        },
-      ],
-    );
+    Alert.alert("Excluir turma", `Deseja realmente excluir ${turma.nome}?`, [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Excluir",
+        style: "destructive",
+        onPress: executarExclusao,
+      },
+    ]);
   }
 
   async function executarExclusao() {
     try {
       setExcluindo(true);
 
-      await excluirProfessor(Number(id));
+      await excluirTurma(Number(id));
 
-      Alert.alert("Sucesso", "Professor excluído com sucesso!", [
+      Alert.alert("Sucesso", "Turma excluída com sucesso!", [
         {
           text: "OK",
-          onPress: () => router.dismissTo("/professores"),
+          onPress: () => router.dismissTo("/turmas"),
         },
       ]);
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert("Não foi possível excluir", error.message);
       } else {
-        Alert.alert("Erro", "Não foi possível excluir o professor.");
+        Alert.alert("Erro", "Não foi possível excluir a turma.");
       }
     } finally {
       setExcluindo(false);
@@ -93,7 +90,7 @@ export default function ProfessorDetalhesScreen() {
 
   if (mensagem) {
     return (
-      <RotaPermissao permissao="PROFESSOR_LISTAR">
+      <RotaPermissao permissao="TURMA_LISTAR">
         <View style={styles.erroContainer}>
           <Text style={styles.erroTitulo}>Ops!</Text>
 
@@ -103,24 +100,24 @@ export default function ProfessorDetalhesScreen() {
     );
   }
 
-  if (!professor) {
+  if (!turma) {
     return (
-      <RotaPermissao permissao="PROFESSOR_LISTAR">
+      <RotaPermissao permissao="TURMA_LISTAR">
         <View style={styles.carregando}>
           <ActivityIndicator size="large" />
 
-          <Text style={styles.carregandoTexto}>Carregando professor...</Text>
+          <Text style={styles.carregandoTexto}>Carregando turma...</Text>
         </View>
       </RotaPermissao>
     );
   }
 
   return (
-    <RotaPermissao permissao="PROFESSOR_LISTAR">
+    <RotaPermissao permissao="TURMA_LISTAR">
       <>
         <Stack.Screen
           options={{
-            title: professor.nome,
+            title: turma.nome,
           }}
         />
 
@@ -130,170 +127,121 @@ export default function ProfessorDetalhesScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Cabeçalho */}
+
           <View style={styles.cabecalho}>
             <View style={styles.avatar}>
               <Text style={styles.avatarTexto}>
-                {professor.nome?.charAt(0).toUpperCase()}
+                {turma.nome?.charAt(0).toUpperCase()}
               </Text>
             </View>
 
             <View style={styles.cabecalhoInfo}>
-              <Text style={styles.nome}>{professor.nome}</Text>
+              <Text style={styles.nome}>{turma.nome}</Text>
 
               <View
                 style={[
                   styles.status,
-                  professor.ativo ? styles.statusAtivo : styles.statusInativo,
+                  turma.ativa ? styles.statusAtivo : styles.statusInativo,
                 ]}
               >
                 <Text
                   style={[
                     styles.statusTexto,
-                    professor.ativo
+                    turma.ativa
                       ? styles.statusTextoAtivo
                       : styles.statusTextoInativo,
                   ]}
                 >
-                  {professor.ativo ? "ATIVO" : "INATIVO"}
+                  {turma.ativa ? "ATIVA" : "INATIVA"}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* Dados pessoais */}
+          {/* Dados da turma */}
+
           <View style={styles.card}>
-            <Text style={styles.secao}>Dados pessoais</Text>
+            <Text style={styles.secao}>Dados da turma</Text>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>CPF</Text>
+              <Text style={styles.label}>Modalidade</Text>
 
               <Text style={styles.valor}>
-                {professor.cpf ? formatarCpf(professor.cpf) : "Não informado"}
+                {turma.modalidadeNome || "Não informado"}
               </Text>
             </View>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>Data de nascimento</Text>
+              <Text style={styles.label}>Professor</Text>
 
               <Text style={styles.valor}>
-                {professor.dataNascimento
-                  ? formatarDataExibicao(professor.dataNascimento)
-                  : "Não informado"}
+                {turma.professorNome || "Não informado"}
               </Text>
             </View>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>Telefone</Text>
+              <Text style={styles.label}>Dias da semana</Text>
 
               <Text style={styles.valor}>
-                {professor.telefone
-                  ? formatarTelefone(professor.telefone)
-                  : "Não informado"}
-              </Text>
-            </View>
-
-            <View style={styles.campo}>
-              <Text style={styles.label}>E-mail</Text>
-
-              <Text style={styles.valor}>
-                {professor.email || "Não informado"}
+                {turma.diasSemana || "Não informado"}
               </Text>
             </View>
           </View>
 
-          {/* Dados profissionais */}
+          {/* Horários */}
+
           <View style={styles.card}>
-            <Text style={styles.secao}>Dados profissionais</Text>
+            <Text style={styles.secao}>Horários</Text>
 
-            <View style={styles.campo}>
-              <Text style={styles.label}>Data de contratação</Text>
+            <View style={styles.linhaHorario}>
+              <View style={styles.horario}>
+                <Text style={styles.label}>Início</Text>
 
-              <Text style={styles.valor}>
-                {professor.dataContratacao
-                  ? formatarDataExibicao(professor.dataContratacao)
-                  : "Não informado"}
-              </Text>
-            </View>
+                <Text style={styles.valor}>
+                  {formatarHorario(turma.horarioInicio)}
+                </Text>
+              </View>
 
-            <View style={styles.campo}>
-              <Text style={styles.label}>Valor da hora aula</Text>
+              <View style={styles.horario}>
+                <Text style={styles.label}>Término</Text>
 
-              <Text style={styles.valor}>
-                {professor.valorHoraAula != null
-                  ? `R$ ${Number(professor.valorHoraAula)
-                      .toFixed(2)
-                      .replace(".", ",")}`
-                  : "Não informado"}
-              </Text>
+                <Text style={styles.valor}>
+                  {formatarHorario(turma.horarioFim)}
+                </Text>
+              </View>
             </View>
           </View>
 
-          {/* Endereço */}
+          {/* Capacidade */}
+
           <View style={styles.card}>
-            <Text style={styles.secao}>Endereço</Text>
+            <Text style={styles.secao}>Capacidade</Text>
 
-            {professor.endereco ? (
-              <>
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Rua</Text>
+            <View style={styles.campo}>
+              <Text style={styles.label}>Número máximo de alunos</Text>
 
-                  <Text style={styles.valor}>
-                    {professor.endereco.rua}, {professor.endereco.numero}
-                  </Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Bairro</Text>
-
-                  <Text style={styles.valor}>{professor.endereco.bairro}</Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Cidade / Estado</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.cidade} - {professor.endereco.estado}
-                  </Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>CEP</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.cep
-                      ? formatarCep(professor.endereco.cep)
-                      : "Não informado"}
-                  </Text>
-                </View>
-
-                {professor.endereco.pontoReferencia ? (
-                  <View style={styles.campo}>
-                    <Text style={styles.label}>Ponto de referência</Text>
-
-                    <Text style={styles.valor}>
-                      {professor.endereco.pontoReferencia}
-                    </Text>
-                  </View>
-                ) : null}
-              </>
-            ) : (
-              <Text style={styles.semEndereco}>Endereço não informado.</Text>
-            )}
+              <Text style={styles.valor}>
+                {turma.capacidade != null
+                  ? `${turma.capacidade} aluno(s)`
+                  : "Não informado"}
+              </Text>
+            </View>
           </View>
 
           {/* Ações */}
+
           <View style={styles.acoes}>
-            <Permissao permissao="PROFESSOR_EDITAR" esconder>
+            <Permissao permissao="TURMA_EDITAR" esconder>
               <Pressable
                 style={styles.botaoEditar}
-                onPress={() => router.push(`/professor/editar/${id}`)}
+                onPress={() => router.push(`/turma/editar/${id}`)}
                 disabled={excluindo}
               >
                 <Text style={styles.botaoEditarTexto}>✏️ Editar</Text>
               </Pressable>
             </Permissao>
 
-            <Permissao permissao="PROFESSOR_EXCLUIR" esconder>
+            <Permissao permissao="TURMA_EXCLUIR" esconder>
               <Pressable
                 style={[
                   styles.botaoExcluir,
@@ -430,10 +378,14 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
 
-  semEndereco: {
-    color: "#6b7280",
-    fontSize: 15,
-    marginTop: 8,
+  linhaHorario: {
+    flexDirection: "row",
+    gap: 20,
+  },
+
+  horario: {
+    flex: 1,
+    paddingVertical: 10,
   },
 
   acoes: {

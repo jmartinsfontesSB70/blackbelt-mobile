@@ -1,5 +1,7 @@
 import { Stack, useRouter } from "expo-router";
+
 import { useState } from "react";
+
 import {
   ActivityIndicator,
   Alert,
@@ -12,6 +14,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
+import Permissao from "@/components/Permissao";
+import RotaPermissao from "@/components/RotaPermissao";
 
 import {
   formatarCep,
@@ -60,6 +65,14 @@ export default function NovoProfessorScreen() {
       return;
     }
 
+    if (!validarData(dataNascimento)) {
+      Alert.alert(
+        "Data inválida",
+        "Informe uma data de nascimento válida no formato DD/MM/AAAA.",
+      );
+      return;
+    }
+
     if (!telefone.trim()) {
       Alert.alert("Atenção", "Informe o telefone.");
       return;
@@ -72,6 +85,14 @@ export default function NovoProfessorScreen() {
 
     if (!dataContratacao.trim()) {
       Alert.alert("Atenção", "Informe a data de contratação.");
+      return;
+    }
+
+    if (!validarData(dataContratacao)) {
+      Alert.alert(
+        "Data inválida",
+        "Informe uma data de contratação válida no formato DD/MM/AAAA.",
+      );
       return;
     }
 
@@ -153,285 +174,346 @@ export default function NovoProfessorScreen() {
     }
   }
 
+  function validarData(data_digitada: string) {
+    const partes = data_digitada.split("/");
+
+    if (partes.length !== 3) {
+      return false;
+    }
+
+    const dia = Number(partes[0]);
+    const mes = Number(partes[1]);
+    const ano = Number(partes[2]);
+
+    if (
+      !Number.isInteger(dia) ||
+      !Number.isInteger(mes) ||
+      !Number.isInteger(ano)
+    ) {
+      return false;
+    }
+
+    if (
+      partes[0].length !== 2 ||
+      partes[1].length !== 2 ||
+      partes[2].length !== 4
+    ) {
+      return false;
+    }
+
+    if (mes < 1 || mes > 12) {
+      return false;
+    }
+
+    if (dia < 1 || dia > 31) {
+      return false;
+    }
+
+    if (ano < 1900 || ano > 2100) {
+      return false;
+    }
+
+    const data = new Date(ano, mes - 1, dia);
+
+    return (
+      data.getFullYear() === ano &&
+      data.getMonth() === mes - 1 &&
+      data.getDate() === dia
+    );
+  }
+
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: "Novo professor",
-        }}
-      />
+    <RotaPermissao permissao="PROFESSOR_CRIAR">
+      <>
+        <Stack.Screen
+          options={{
+            title: "Novo professor",
+          }}
+        />
 
-      <KeyboardAvoidingView
-        style={styles.tela}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+        <KeyboardAvoidingView
+          style={styles.tela}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <View style={styles.cabecalho}>
-            <Text style={styles.titulo}>Novo professor</Text>
-
-            <Text style={styles.subtitulo}>
-              Cadastre um novo professor no BlackBelt
-            </Text>
-          </View>
-
-          {/* Dados pessoais */}
-          <View style={styles.card}>
-            <View style={styles.tituloSecao}>
-              <View style={styles.iconeSecao}>
-                <Text style={styles.iconeTexto}>👤</Text>
-              </View>
-
-              <View>
-                <Text style={styles.secao}>Dados pessoais</Text>
-
-                <Text style={styles.descricaoSecao}>
-                  Informações básicas do professor
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.label}>Nome completo *</Text>
-
-            <TextInput
-              style={styles.input}
-              value={nome}
-              onChangeText={setNome}
-              placeholder="Digite o nome completo"
-              placeholderTextColor="#9ca3af"
-              autoCapitalize="words"
-            />
-
-            <View style={styles.linha}>
-              <View style={styles.campoMaior}>
-                <Text style={styles.label}>CPF *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={cpf}
-                  onChangeText={(texto) => setCpf(formatarCpf(texto))}
-                  placeholder="000.000.000-00"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
-
-              <View style={styles.campoMenor}>
-                <Text style={styles.label}>Nascimento *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={dataNascimento}
-                  onChangeText={(texto) =>
-                    setDataNascimento(formatarData(texto))
-                  }
-                  placeholder="DD/MM/AAAA"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
-            </View>
-
-            <Text style={styles.label}>Telefone *</Text>
-
-            <TextInput
-              style={styles.input}
-              value={telefone}
-              onChangeText={(texto) => setTelefone(formatarTelefone(texto))}
-              placeholder="(00) 00000-0000"
-              placeholderTextColor="#9ca3af"
-              keyboardType="phone-pad"
-            />
-
-            <Text style={styles.label}>E-mail *</Text>
-
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="email@exemplo.com"
-              placeholderTextColor="#9ca3af"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-
-          {/* Dados profissionais */}
-          <View style={styles.card}>
-            <View style={styles.tituloSecao}>
-              <View style={styles.iconeSecao}>
-                <Text style={styles.iconeTexto}>🥋</Text>
-              </View>
-
-              <View>
-                <Text style={styles.secao}>Dados profissionais</Text>
-
-                <Text style={styles.descricaoSecao}>
-                  Informações profissionais do professor
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.label}>Data de contratação *</Text>
-
-            <TextInput
-              style={styles.input}
-              value={dataContratacao}
-              onChangeText={(texto) => setDataContratacao(formatarData(texto))}
-              placeholder="DD/MM/AAAA"
-              placeholderTextColor="#9ca3af"
-              keyboardType="numeric"
-            />
-
-            <Text style={styles.label}>Valor da hora aula *</Text>
-
-            <TextInput
-              style={styles.input}
-              value={valorHoraAula}
-              onChangeText={setValorHoraAula}
-              placeholder="Ex.: 50,00"
-              placeholderTextColor="#9ca3af"
-              keyboardType="decimal-pad"
-            />
-          </View>
-
-          {/* Endereço */}
-          <View style={styles.card}>
-            <View style={styles.tituloSecao}>
-              <View style={styles.iconeSecao}>
-                <Text style={styles.iconeTexto}>📍</Text>
-              </View>
-
-              <View>
-                <Text style={styles.secao}>Endereço</Text>
-
-                <Text style={styles.descricaoSecao}>
-                  Localização e endereço residencial
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.label}>CEP *</Text>
-
-            <TextInput
-              style={styles.input}
-              value={cep}
-              onChangeText={(texto) => setCep(formatarCep(texto))}
-              placeholder="00000-000"
-              placeholderTextColor="#9ca3af"
-              keyboardType="numeric"
-            />
-
-            <Text style={styles.label}>Rua *</Text>
-
-            <TextInput
-              style={styles.input}
-              value={rua}
-              onChangeText={setRua}
-              placeholder="Nome da rua"
-              placeholderTextColor="#9ca3af"
-              autoCapitalize="words"
-            />
-
-            <View style={styles.linha}>
-              <View style={styles.campoNumero}>
-                <Text style={styles.label}>Número *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={numero}
-                  onChangeText={setNumero}
-                  placeholder="Número"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
-
-              <View style={styles.campoComplemento}>
-                <Text style={styles.label}>Bairro *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={bairro}
-                  onChangeText={setBairro}
-                  placeholder="Bairro"
-                  placeholderTextColor="#9ca3af"
-                  autoCapitalize="words"
-                />
-              </View>
-            </View>
-
-            <View style={styles.linha}>
-              <View style={styles.cidade}>
-                <Text style={styles.label}>Cidade *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={cidade}
-                  onChangeText={setCidade}
-                  placeholder="Cidade"
-                  placeholderTextColor="#9ca3af"
-                  autoCapitalize="words"
-                />
-              </View>
-
-              <View style={styles.estado}>
-                <Text style={styles.label}>UF *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={estado}
-                  onChangeText={setEstado}
-                  placeholder="BA"
-                  placeholderTextColor="#9ca3af"
-                  autoCapitalize="characters"
-                  maxLength={2}
-                />
-              </View>
-            </View>
-
-            <Text style={styles.label}>Ponto de referência</Text>
-
-            <TextInput
-              style={[styles.input, styles.inputMultiline]}
-              value={pontoReferencia}
-              onChangeText={setPontoReferencia}
-              placeholder="Ex.: próximo à academia..."
-              placeholderTextColor="#9ca3af"
-              multiline
-            />
-          </View>
-
-          {/* Cadastrar */}
-          <TouchableOpacity
-            style={[styles.botao, salvando && styles.botaoDesabilitado]}
-            onPress={salvar}
-            disabled={salvando}
-            activeOpacity={0.8}
+          <ScrollView
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            {salvando ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={styles.botaoTexto}>Cadastrar professor</Text>
-            )}
-          </TouchableOpacity>
+            {/* Cabeçalho */}
 
-          {/* Cancelar */}
-          <TouchableOpacity
-            style={styles.botaoCancelar}
-            onPress={() => router.back()}
-            disabled={salvando}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.botaoCancelarTexto}>Cancelar</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </>
+            <View style={styles.cabecalho}>
+              <Text style={styles.titulo}>Novo professor</Text>
+
+              <Text style={styles.subtitulo}>
+                Cadastre um novo professor no BlackBelt
+              </Text>
+            </View>
+
+            {/* Dados pessoais */}
+
+            <View style={styles.card}>
+              <View style={styles.tituloSecao}>
+                <View style={styles.iconeSecao}>
+                  <Text style={styles.iconeTexto}>👤</Text>
+                </View>
+
+                <View>
+                  <Text style={styles.secao}>Dados pessoais</Text>
+
+                  <Text style={styles.descricaoSecao}>
+                    Informações básicas do professor
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.label}>Nome completo *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={nome}
+                onChangeText={setNome}
+                placeholder="Digite o nome completo"
+                placeholderTextColor="#9ca3af"
+                autoCapitalize="words"
+              />
+
+              <View style={styles.linha}>
+                <View style={styles.campoMaior}>
+                  <Text style={styles.label}>CPF *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={cpf}
+                    onChangeText={(texto) => setCpf(formatarCpf(texto))}
+                    placeholder="000.000.000-00"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numeric"
+                  />
+                </View>
+
+                <View style={styles.campoMenor}>
+                  <Text style={styles.label}>Nascimento *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={dataNascimento}
+                    onChangeText={(texto) =>
+                      setDataNascimento(formatarData(texto))
+                    }
+                    placeholder="DD/MM/AAAA"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.label}>Telefone *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={telefone}
+                onChangeText={(texto) => setTelefone(formatarTelefone(texto))}
+                placeholder="(00) 00000-0000"
+                placeholderTextColor="#9ca3af"
+                keyboardType="phone-pad"
+              />
+
+              <Text style={styles.label}>E-mail *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="email@exemplo.com"
+                placeholderTextColor="#9ca3af"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+
+            {/* Dados profissionais */}
+
+            <View style={styles.card}>
+              <View style={styles.tituloSecao}>
+                <View style={styles.iconeSecao}>
+                  <Text style={styles.iconeTexto}>🥋</Text>
+                </View>
+
+                <View>
+                  <Text style={styles.secao}>Dados profissionais</Text>
+
+                  <Text style={styles.descricaoSecao}>
+                    Informações profissionais do professor
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.label}>Data de contratação *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={dataContratacao}
+                onChangeText={(texto) =>
+                  setDataContratacao(formatarData(texto))
+                }
+                placeholder="DD/MM/AAAA"
+                placeholderTextColor="#9ca3af"
+                keyboardType="numeric"
+              />
+
+              <Text style={styles.label}>Valor da hora aula *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={valorHoraAula}
+                onChangeText={setValorHoraAula}
+                placeholder="Ex.: 50,00"
+                placeholderTextColor="#9ca3af"
+                keyboardType="decimal-pad"
+              />
+            </View>
+
+            {/* Endereço */}
+
+            <View style={styles.card}>
+              <View style={styles.tituloSecao}>
+                <View style={styles.iconeSecao}>
+                  <Text style={styles.iconeTexto}>📍</Text>
+                </View>
+
+                <View>
+                  <Text style={styles.secao}>Endereço</Text>
+
+                  <Text style={styles.descricaoSecao}>
+                    Localização e endereço residencial
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.label}>CEP *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={cep}
+                onChangeText={(texto) => setCep(formatarCep(texto))}
+                placeholder="00000-000"
+                placeholderTextColor="#9ca3af"
+                keyboardType="numeric"
+              />
+
+              <Text style={styles.label}>Rua *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={rua}
+                onChangeText={setRua}
+                placeholder="Nome da rua"
+                placeholderTextColor="#9ca3af"
+                autoCapitalize="words"
+              />
+
+              <View style={styles.linha}>
+                <View style={styles.campoNumero}>
+                  <Text style={styles.label}>Número *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={numero}
+                    onChangeText={setNumero}
+                    placeholder="Número"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numeric"
+                  />
+                </View>
+
+                <View style={styles.campoComplemento}>
+                  <Text style={styles.label}>Bairro *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={bairro}
+                    onChangeText={setBairro}
+                    placeholder="Bairro"
+                    placeholderTextColor="#9ca3af"
+                    autoCapitalize="words"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.linha}>
+                <View style={styles.cidade}>
+                  <Text style={styles.label}>Cidade *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={cidade}
+                    onChangeText={setCidade}
+                    placeholder="Cidade"
+                    placeholderTextColor="#9ca3af"
+                    autoCapitalize="words"
+                  />
+                </View>
+
+                <View style={styles.estado}>
+                  <Text style={styles.label}>UF *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={estado}
+                    onChangeText={setEstado}
+                    placeholder="BA"
+                    placeholderTextColor="#9ca3af"
+                    autoCapitalize="characters"
+                    maxLength={2}
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.label}>Ponto de referência</Text>
+
+              <TextInput
+                style={[styles.input, styles.inputMultiline]}
+                value={pontoReferencia}
+                onChangeText={setPontoReferencia}
+                placeholder="Ex.: próximo à academia..."
+                placeholderTextColor="#9ca3af"
+                multiline
+              />
+            </View>
+
+            {/* Cadastrar */}
+
+            <Permissao permissao="PROFESSOR_CRIAR" esconder>
+              <TouchableOpacity
+                style={[styles.botao, salvando && styles.botaoDesabilitado]}
+                onPress={salvar}
+                disabled={salvando}
+                activeOpacity={0.8}
+              >
+                {salvando ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text style={styles.botaoTexto}>Cadastrar professor</Text>
+                )}
+              </TouchableOpacity>
+            </Permissao>
+
+            {/* Cancelar */}
+
+            <TouchableOpacity
+              style={styles.botaoCancelar}
+              onPress={() => router.back()}
+              disabled={salvando}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.botaoCancelarTexto}>Cancelar</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </>
+    </RotaPermissao>
   );
 }
 

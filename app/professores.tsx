@@ -10,7 +10,9 @@ import {
   View,
 } from "react-native";
 
+import Permissao from "@/components/Permissao";
 import ProfessorCard from "@/components/ProfessorCard";
+import RotaPermissao from "@/components/RotaPermissao";
 
 import { formatarCpf, formatarTelefone } from "@/utils/masks";
 
@@ -87,42 +89,48 @@ export default function ProfessoresScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.cabecalho}>
-        <Text style={styles.titulo}>Professores</Text>
+    <RotaPermissao permissao="PROFESSOR_LISTAR">
+      <View style={styles.container}>
+        <View style={styles.cabecalho}>
+          <Text style={styles.titulo}>Professores</Text>
 
-        <Pressable
-          style={styles.botaoNovo}
-          onPress={() => router.push("/professor/novo")}
-        >
-          <Text style={styles.botaoNovoTexto}>+ Novo professor</Text>
-        </Pressable>
+          <Permissao permissao="PROFESSOR_CRIAR" esconder>
+            <Pressable
+              style={styles.botaoNovo}
+              onPress={() => router.push("/professor/novo")}
+            >
+              <Text style={styles.botaoNovoTexto}>+ Novo professor</Text>
+            </Pressable>
+          </Permissao>
+        </View>
+
+        {mensagem ? (
+          <Text style={styles.mensagem}>{mensagem}</Text>
+        ) : (
+          <FlatList
+            data={professores}
+            keyExtractor={(professor) => professor.id.toString()}
+            renderItem={({ item }) => (
+              <ProfessorCard
+                nome={item.nome}
+                cpf={item.cpf ? formatarCpf(item.cpf) : ""}
+                telefone={item.telefone ? formatarTelefone(item.telefone) : ""}
+                ativo={item.ativo}
+                onPress={() => router.push(`/professor/${item.id}`)}
+              />
+            )}
+            onEndReached={carregarProximaPagina}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              carregando ? (
+                <ActivityIndicator style={styles.carregando} />
+              ) : null
+            }
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </View>
-
-      {mensagem ? (
-        <Text style={styles.mensagem}>{mensagem}</Text>
-      ) : (
-        <FlatList
-          data={professores}
-          keyExtractor={(professor) => professor.id.toString()}
-          renderItem={({ item }) => (
-            <ProfessorCard
-              nome={item.nome}
-              cpf={item.cpf ? formatarCpf(item.cpf) : ""}
-              telefone={item.telefone ? formatarTelefone(item.telefone) : ""}
-              ativo={item.ativo}
-              onPress={() => router.push(`/professor/${item.id}`)}
-            />
-          )}
-          onEndReached={carregarProximaPagina}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            carregando ? <ActivityIndicator style={styles.carregando} /> : null
-          }
-          showsVerticalScrollIndicator={false}
-        />
-      )}
-    </View>
+    </RotaPermissao>
   );
 }
 

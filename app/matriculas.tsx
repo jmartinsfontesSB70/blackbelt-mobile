@@ -10,16 +10,16 @@ import {
   View,
 } from "react-native";
 
-import AlunoCard from "@/components/AlunoCard";
+import MatriculaCard from "@/components/MatriculaCard";
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
-import { listarAlunos } from "@/services/alunoService";
-import { formatarCpf } from "@/utils/masks";
 
-export default function AlunosScreen() {
+import { listarMatriculas } from "@/services/matriculaService";
+
+export default function MatriculasScreen() {
   const router = useRouter();
 
-  const [alunos, setAlunos] = useState<any[]>([]);
+  const [matriculas, setMatriculas] = useState<any[]>([]);
   const [mensagem, setMensagem] = useState("");
   const [pagina, setPagina] = useState(0);
   const [temMais, setTemMais] = useState(true);
@@ -30,18 +30,18 @@ export default function AlunosScreen() {
       setCarregando(true);
       setMensagem("");
 
-      const resposta = await listarAlunos(0, 10);
+      const resposta = await listarMatriculas(0, 10);
 
-      const novosAlunos = resposta.content ?? resposta;
+      const novasMatriculas = resposta.content ?? resposta;
 
-      setAlunos(novosAlunos);
+      setMatriculas(novasMatriculas);
       setPagina(0);
       setTemMais(!resposta.last);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar alunos.");
+        setMensagem("Erro ao carregar matrículas.");
       }
     } finally {
       setCarregando(false);
@@ -64,11 +64,14 @@ export default function AlunosScreen() {
 
       const proximaPagina = pagina + 1;
 
-      const resposta = await listarAlunos(proximaPagina, 10);
+      const resposta = await listarMatriculas(proximaPagina, 10);
 
-      const novosAlunos = resposta.content ?? resposta;
+      const novasMatriculas = resposta.content ?? resposta;
 
-      setAlunos((alunosAtuais) => [...alunosAtuais, ...novosAlunos]);
+      setMatriculas((matriculasAtuais) => [
+        ...matriculasAtuais,
+        ...novasMatriculas,
+      ]);
 
       setPagina(proximaPagina);
       setTemMais(!resposta.last);
@@ -76,7 +79,7 @@ export default function AlunosScreen() {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar alunos.");
+        setMensagem("Erro ao carregar matrículas.");
       }
     } finally {
       setCarregando(false);
@@ -84,17 +87,17 @@ export default function AlunosScreen() {
   }
 
   return (
-    <RotaPermissao permissao="ALUNO_LISTAR">
+    <RotaPermissao permissao="MATRICULA_LISTAR">
       <View style={styles.container}>
         <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Alunos</Text>
+          <Text style={styles.titulo}>Matrículas</Text>
 
-          <Permissao permissao="ALUNO_CRIAR" esconder>
+          <Permissao permissao="MATRICULA_CRIAR" esconder>
             <Pressable
               style={styles.botaoNovo}
-              onPress={() => router.push("/aluno/novo")}
+              onPress={() => router.push("/matricula/novo")}
             >
-              <Text style={styles.botaoNovoTexto}>+ Novo aluno</Text>
+              <Text style={styles.botaoNovoTexto}>+ Nova matrícula</Text>
             </Pressable>
           </Permissao>
         </View>
@@ -103,13 +106,15 @@ export default function AlunosScreen() {
           <Text style={styles.mensagem}>{mensagem}</Text>
         ) : (
           <FlatList
-            data={alunos}
-            keyExtractor={(aluno) => aluno.id.toString()}
+            data={matriculas}
+            keyExtractor={(matricula) => matricula.id.toString()}
             renderItem={({ item }) => (
-              <AlunoCard
-                nome={item.nome}
-                cpf={item.cpf ? formatarCpf(item.cpf) : ""}
-                onPress={() => router.push(`/aluno/${item.id}`)}
+              <MatriculaCard
+                alunoNome={item.alunoNome}
+                turmaNome={item.turmaNome}
+                dataMatricula={item.dataMatricula}
+                ativa={item.ativa}
+                onPress={() => router.push(`/matricula/${item.id}`)}
               />
             )}
             onEndReached={carregarProximaPagina}

@@ -13,47 +13,54 @@ import {
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
 
-import {
-  formatarCep,
-  formatarCpf,
-  formatarDataExibicao,
-  formatarTelefone,
-} from "@/utils/masks";
+import { buscarPresenca, excluirPresenca } from "@/services/presencaService";
 
-import { buscarProfessor, excluirProfessor } from "@/services/professorService";
-
-export default function ProfessorDetalhesScreen() {
+export default function PresencaDetalhesScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [professor, setProfessor] = useState<any>(null);
+  const [presenca, setPresenca] = useState<any>(null);
   const [mensagem, setMensagem] = useState("");
   const [excluindo, setExcluindo] = useState(false);
 
   useEffect(() => {
-    carregarProfessor();
+    carregarPresenca();
   }, [id]);
 
-  async function carregarProfessor() {
+  async function carregarPresenca() {
     try {
       setMensagem("");
 
-      const resposta = await buscarProfessor(id);
+      const resposta = await buscarPresenca(id);
 
-      setProfessor(resposta);
+      setPresenca(resposta);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar professor.");
+        setMensagem("Erro ao carregar presença.");
       }
     }
   }
 
+  function formatarData(data?: string) {
+    if (!data) {
+      return "Não informada";
+    }
+
+    const partes = data.split("-");
+
+    if (partes.length !== 3) {
+      return data;
+    }
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+
   function confirmarExclusao() {
     Alert.alert(
-      "Excluir professor",
-      `Deseja realmente excluir ${professor.nome}?`,
+      "Excluir presença",
+      `Deseja realmente excluir a presença de ${presenca.alunoNome}?`,
       [
         {
           text: "Cancelar",
@@ -72,19 +79,19 @@ export default function ProfessorDetalhesScreen() {
     try {
       setExcluindo(true);
 
-      await excluirProfessor(Number(id));
+      await excluirPresenca(Number(id));
 
-      Alert.alert("Sucesso", "Professor excluído com sucesso!", [
+      Alert.alert("Sucesso", "Presença excluída com sucesso!", [
         {
           text: "OK",
-          onPress: () => router.dismissTo("/professores"),
+          onPress: () => router.dismissTo("/presencas"),
         },
       ]);
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert("Não foi possível excluir", error.message);
       } else {
-        Alert.alert("Erro", "Não foi possível excluir o professor.");
+        Alert.alert("Erro", "Não foi possível excluir a presença.");
       }
     } finally {
       setExcluindo(false);
@@ -93,7 +100,7 @@ export default function ProfessorDetalhesScreen() {
 
   if (mensagem) {
     return (
-      <RotaPermissao permissao="PROFESSOR_LISTAR">
+      <RotaPermissao permissao="PRESENCA_LISTAR">
         <View style={styles.erroContainer}>
           <Text style={styles.erroTitulo}>Ops!</Text>
 
@@ -103,24 +110,24 @@ export default function ProfessorDetalhesScreen() {
     );
   }
 
-  if (!professor) {
+  if (!presenca) {
     return (
-      <RotaPermissao permissao="PROFESSOR_LISTAR">
+      <RotaPermissao permissao="PRESENCA_LISTAR">
         <View style={styles.carregando}>
           <ActivityIndicator size="large" />
 
-          <Text style={styles.carregandoTexto}>Carregando professor...</Text>
+          <Text style={styles.carregandoTexto}>Carregando presença...</Text>
         </View>
       </RotaPermissao>
     );
   }
 
   return (
-    <RotaPermissao permissao="PROFESSOR_LISTAR">
+    <RotaPermissao permissao="PRESENCA_LISTAR">
       <>
         <Stack.Screen
           options={{
-            title: professor.nome,
+            title: "Presença",
           }}
         />
 
@@ -130,170 +137,116 @@ export default function ProfessorDetalhesScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Cabeçalho */}
+
           <View style={styles.cabecalho}>
             <View style={styles.avatar}>
               <Text style={styles.avatarTexto}>
-                {professor.nome?.charAt(0).toUpperCase()}
+                {presenca.alunoNome?.charAt(0).toUpperCase()}
               </Text>
             </View>
 
             <View style={styles.cabecalhoInfo}>
-              <Text style={styles.nome}>{professor.nome}</Text>
+              <Text style={styles.nome}>
+                {presenca.alunoNome || "Aluno não informado"}
+              </Text>
 
               <View
                 style={[
                   styles.status,
-                  professor.ativo ? styles.statusAtivo : styles.statusInativo,
+                  presenca.presente
+                    ? styles.statusPresente
+                    : styles.statusAusente,
                 ]}
               >
                 <Text
                   style={[
                     styles.statusTexto,
-                    professor.ativo
-                      ? styles.statusTextoAtivo
-                      : styles.statusTextoInativo,
+                    presenca.presente
+                      ? styles.statusTextoPresente
+                      : styles.statusTextoAusente,
                   ]}
                 >
-                  {professor.ativo ? "ATIVO" : "INATIVO"}
+                  {presenca.presente ? "PRESENTE" : "AUSENTE"}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* Dados pessoais */}
+          {/* Dados da presença */}
+
           <View style={styles.card}>
-            <Text style={styles.secao}>Dados pessoais</Text>
+            <Text style={styles.secao}>Dados da presença</Text>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>CPF</Text>
+              <Text style={styles.label}>Aluno</Text>
 
               <Text style={styles.valor}>
-                {professor.cpf ? formatarCpf(professor.cpf) : "Não informado"}
+                {presenca.alunoNome || "Não informado"}
               </Text>
             </View>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>Data de nascimento</Text>
+              <Text style={styles.label}>Turma</Text>
 
               <Text style={styles.valor}>
-                {professor.dataNascimento
-                  ? formatarDataExibicao(professor.dataNascimento)
-                  : "Não informado"}
+                {presenca.turmaNome || "Não informado"}
               </Text>
             </View>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>Telefone</Text>
+              <Text style={styles.label}>Data</Text>
 
-              <Text style={styles.valor}>
-                {professor.telefone
-                  ? formatarTelefone(professor.telefone)
-                  : "Não informado"}
-              </Text>
+              <Text style={styles.valor}>{formatarData(presenca.data)}</Text>
             </View>
+          </View>
+
+          {/* Situação */}
+
+          <View style={styles.card}>
+            <Text style={styles.secao}>Situação</Text>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>E-mail</Text>
+              <Text style={styles.label}>Presença</Text>
 
-              <Text style={styles.valor}>
-                {professor.email || "Não informado"}
+              <Text
+                style={[
+                  styles.valor,
+                  presenca.presente
+                    ? styles.valorPresente
+                    : styles.valorAusente,
+                ]}
+              >
+                {presenca.presente ? "Presente" : "Ausente"}
               </Text>
             </View>
           </View>
 
-          {/* Dados profissionais */}
+          {/* Observação */}
+
           <View style={styles.card}>
-            <Text style={styles.secao}>Dados profissionais</Text>
+            <Text style={styles.secao}>Observação</Text>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>Data de contratação</Text>
-
               <Text style={styles.valor}>
-                {professor.dataContratacao
-                  ? formatarDataExibicao(professor.dataContratacao)
-                  : "Não informado"}
+                {presenca.observacao || "Nenhuma observação informada."}
               </Text>
             </View>
-
-            <View style={styles.campo}>
-              <Text style={styles.label}>Valor da hora aula</Text>
-
-              <Text style={styles.valor}>
-                {professor.valorHoraAula != null
-                  ? `R$ ${Number(professor.valorHoraAula)
-                      .toFixed(2)
-                      .replace(".", ",")}`
-                  : "Não informado"}
-              </Text>
-            </View>
-          </View>
-
-          {/* Endereço */}
-          <View style={styles.card}>
-            <Text style={styles.secao}>Endereço</Text>
-
-            {professor.endereco ? (
-              <>
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Rua</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.rua}, {professor.endereco.numero}
-                  </Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Bairro</Text>
-
-                  <Text style={styles.valor}>{professor.endereco.bairro}</Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Cidade / Estado</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.cidade} - {professor.endereco.estado}
-                  </Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>CEP</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.cep
-                      ? formatarCep(professor.endereco.cep)
-                      : "Não informado"}
-                  </Text>
-                </View>
-
-                {professor.endereco.pontoReferencia ? (
-                  <View style={styles.campo}>
-                    <Text style={styles.label}>Ponto de referência</Text>
-
-                    <Text style={styles.valor}>
-                      {professor.endereco.pontoReferencia}
-                    </Text>
-                  </View>
-                ) : null}
-              </>
-            ) : (
-              <Text style={styles.semEndereco}>Endereço não informado.</Text>
-            )}
           </View>
 
           {/* Ações */}
+
           <View style={styles.acoes}>
-            <Permissao permissao="PROFESSOR_EDITAR" esconder>
+            <Permissao permissao="PRESENCA_EDITAR" esconder>
               <Pressable
                 style={styles.botaoEditar}
-                onPress={() => router.push(`/professor/editar/${id}`)}
+                onPress={() => router.push(`/presenca/editar/${id}`)}
                 disabled={excluindo}
               >
                 <Text style={styles.botaoEditarTexto}>✏️ Editar</Text>
               </Pressable>
             </Permissao>
 
-            <Permissao permissao="PROFESSOR_EXCLUIR" esconder>
+            <Permissao permissao="PRESENCA_EXCLUIR" esconder>
               <Pressable
                 style={[
                   styles.botaoExcluir,
@@ -369,11 +322,11 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
 
-  statusAtivo: {
+  statusPresente: {
     backgroundColor: "#dcfce7",
   },
 
-  statusInativo: {
+  statusAusente: {
     backgroundColor: "#fee2e2",
   },
 
@@ -382,11 +335,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  statusTextoAtivo: {
+  statusTextoPresente: {
     color: "#166534",
   },
 
-  statusTextoInativo: {
+  statusTextoAusente: {
     color: "#991b1b",
   },
 
@@ -430,10 +383,14 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
 
-  semEndereco: {
-    color: "#6b7280",
-    fontSize: 15,
-    marginTop: 8,
+  valorPresente: {
+    color: "#166534",
+    fontWeight: "600",
+  },
+
+  valorAusente: {
+    color: "#991b1b",
+    fontWeight: "600",
   },
 
   acoes: {

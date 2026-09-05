@@ -13,6 +13,9 @@ import {
   View,
 } from "react-native";
 
+import Permissao from "@/components/Permissao";
+import RotaPermissao from "@/components/RotaPermissao";
+
 import {
   formatarCep,
   formatarCpf,
@@ -58,6 +61,22 @@ export default function NovoAlunoScreen() {
       return;
     }
 
+    /*
+     * Validação da data antes de enviar para a API.
+     *
+     * Usamos um nome diferente para deixar claro que estamos
+     * trabalhando com o valor digitado pelo usuário.
+     */
+    const data_digitada = dataNascimento.trim();
+
+    if (!validarData(data_digitada)) {
+      Alert.alert(
+        "Atenção",
+        "Informe uma data de nascimento válida no formato DD/MM/AAAA.",
+      );
+      return;
+    }
+
     if (!rua.trim()) {
       Alert.alert("Atenção", "Informe a rua.");
       return;
@@ -94,7 +113,7 @@ export default function NovoAlunoScreen() {
       await criarAluno({
         nome: nome.trim(),
         cpf: cpf.replace(/\D/g, ""),
-        dataNascimento: formatarDataParaApi(dataNascimento),
+        dataNascimento: formatarDataParaApi(data_digitada),
         telefone: telefone.replace(/\D/g, ""),
         email: email.trim(),
         ativo: true,
@@ -128,247 +147,311 @@ export default function NovoAlunoScreen() {
   }
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: "Novo aluno",
-        }}
-      />
+    <RotaPermissao permissao="ALUNO_CRIAR">
+      <>
+        <Stack.Screen
+          options={{
+            title: "Novo aluno",
+          }}
+        />
 
-      <KeyboardAvoidingView
-        style={styles.tela}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+        <KeyboardAvoidingView
+          style={styles.tela}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          {/* Cabeçalho */}
-          <View style={styles.cabecalho}>
-            <Text style={styles.titulo}>Novo aluno</Text>
-
-            <Text style={styles.subtitulo}>
-              Cadastre um novo aluno no BlackBelt
-            </Text>
-          </View>
-
-          {/* Dados pessoais */}
-          <View style={styles.card}>
-            <View style={styles.tituloSecao}>
-              <View style={styles.iconeSecao}>
-                <Text style={styles.iconeTexto}>👤</Text>
-              </View>
-
-              <View>
-                <Text style={styles.secao}>Dados pessoais</Text>
-
-                <Text style={styles.descricaoSecao}>
-                  Informações básicas do aluno
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.label}>Nome completo *</Text>
-
-            <TextInput
-              style={styles.input}
-              value={nome}
-              onChangeText={setNome}
-              placeholder="Digite o nome completo"
-              placeholderTextColor="#9ca3af"
-              autoCapitalize="words"
-            />
-
-            <View style={styles.linha}>
-              <View style={styles.campoMaior}>
-                <Text style={styles.label}>CPF *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={cpf}
-                  onChangeText={(texto) => setCpf(formatarCpf(texto))}
-                  placeholder="000.000.000-00"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
-
-              <View style={styles.campoMenor}>
-                <Text style={styles.label}>Nascimento *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={dataNascimento}
-                  onChangeText={(texto) =>
-                    setDataNascimento(formatarData(texto))
-                  }
-                  placeholder="DD/MM/AAAA"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
-            </View>
-
-            <Text style={styles.label}>Telefone</Text>
-
-            <TextInput
-              style={styles.input}
-              value={telefone}
-              onChangeText={(texto) => setTelefone(formatarTelefone(texto))}
-              placeholder="(00) 00000-0000"
-              placeholderTextColor="#9ca3af"
-              keyboardType="phone-pad"
-            />
-
-            <Text style={styles.label}>E-mail</Text>
-
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="email@exemplo.com"
-              placeholderTextColor="#9ca3af"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-
-          {/* Endereço */}
-          <View style={styles.card}>
-            <View style={styles.tituloSecao}>
-              <View style={styles.iconeSecao}>
-                <Text style={styles.iconeTexto}>📍</Text>
-              </View>
-
-              <View>
-                <Text style={styles.secao}>Endereço</Text>
-
-                <Text style={styles.descricaoSecao}>
-                  Localização e endereço residencial
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.label}>CEP *</Text>
-
-            <TextInput
-              style={styles.input}
-              value={cep}
-              onChangeText={(texto) => setCep(formatarCep(texto))}
-              placeholder="00000-000"
-              placeholderTextColor="#9ca3af"
-              keyboardType="numeric"
-            />
-
-            <Text style={styles.label}>Rua *</Text>
-
-            <TextInput
-              style={styles.input}
-              value={rua}
-              onChangeText={setRua}
-              placeholder="Nome da rua"
-              placeholderTextColor="#9ca3af"
-              autoCapitalize="words"
-            />
-
-            <View style={styles.linha}>
-              <View style={styles.campoNumero}>
-                <Text style={styles.label}>Número *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={numero}
-                  onChangeText={setNumero}
-                  placeholder="Número"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
-
-              <View style={styles.campoComplemento}>
-                <Text style={styles.label}>Bairro *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={bairro}
-                  onChangeText={setBairro}
-                  placeholder="Bairro"
-                  placeholderTextColor="#9ca3af"
-                  autoCapitalize="words"
-                />
-              </View>
-            </View>
-
-            <View style={styles.linha}>
-              <View style={styles.cidade}>
-                <Text style={styles.label}>Cidade *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={cidade}
-                  onChangeText={setCidade}
-                  placeholder="Cidade"
-                  placeholderTextColor="#9ca3af"
-                  autoCapitalize="words"
-                />
-              </View>
-
-              <View style={styles.estado}>
-                <Text style={styles.label}>UF *</Text>
-
-                <TextInput
-                  style={styles.input}
-                  value={estado}
-                  onChangeText={setEstado}
-                  placeholder="BA"
-                  placeholderTextColor="#9ca3af"
-                  autoCapitalize="characters"
-                  maxLength={2}
-                />
-              </View>
-            </View>
-
-            <Text style={styles.label}>Ponto de referência</Text>
-
-            <TextInput
-              style={[styles.input, styles.inputMultiline]}
-              value={pontoReferencia}
-              onChangeText={setPontoReferencia}
-              placeholder="Ex.: próximo à academia..."
-              placeholderTextColor="#9ca3af"
-              multiline
-            />
-          </View>
-
-          {/* Cadastrar */}
-          <TouchableOpacity
-            style={[styles.botao, salvando && styles.botaoDesabilitado]}
-            onPress={salvar}
-            disabled={salvando}
-            activeOpacity={0.8}
+          <ScrollView
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            {salvando ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={styles.botaoTexto}>Cadastrar aluno</Text>
-            )}
-          </TouchableOpacity>
+            {/* Cabeçalho */}
 
-          {/* Cancelar */}
-          <TouchableOpacity
-            style={styles.botaoCancelar}
-            onPress={() => router.back()}
-            disabled={salvando}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.botaoCancelarTexto}>Cancelar</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </>
+            <View style={styles.cabecalho}>
+              <Text style={styles.titulo}>Novo aluno</Text>
+
+              <Text style={styles.subtitulo}>
+                Cadastre um novo aluno no BlackBelt
+              </Text>
+            </View>
+
+            {/* Dados pessoais */}
+
+            <View style={styles.card}>
+              <View style={styles.tituloSecao}>
+                <View style={styles.iconeSecao}>
+                  <Text style={styles.iconeTexto}>👤</Text>
+                </View>
+
+                <View>
+                  <Text style={styles.secao}>Dados pessoais</Text>
+
+                  <Text style={styles.descricaoSecao}>
+                    Informações básicas do aluno
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.label}>Nome completo *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={nome}
+                onChangeText={setNome}
+                placeholder="Digite o nome completo"
+                placeholderTextColor="#9ca3af"
+                autoCapitalize="words"
+              />
+
+              <View style={styles.linha}>
+                <View style={styles.campoMaior}>
+                  <Text style={styles.label}>CPF *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={cpf}
+                    onChangeText={(texto) => setCpf(formatarCpf(texto))}
+                    placeholder="000.000.000-00"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numeric"
+                  />
+                </View>
+
+                <View style={styles.campoMenor}>
+                  <Text style={styles.label}>Nascimento *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={dataNascimento}
+                    onChangeText={(texto) =>
+                      setDataNascimento(formatarData(texto))
+                    }
+                    placeholder="DD/MM/AAAA"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numeric"
+                    maxLength={10}
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.label}>Telefone</Text>
+
+              <TextInput
+                style={styles.input}
+                value={telefone}
+                onChangeText={(texto) => setTelefone(formatarTelefone(texto))}
+                placeholder="(00) 00000-0000"
+                placeholderTextColor="#9ca3af"
+                keyboardType="phone-pad"
+              />
+
+              <Text style={styles.label}>E-mail</Text>
+
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="email@exemplo.com"
+                placeholderTextColor="#9ca3af"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+
+            {/* Endereço */}
+
+            <View style={styles.card}>
+              <View style={styles.tituloSecao}>
+                <View style={styles.iconeSecao}>
+                  <Text style={styles.iconeTexto}>📍</Text>
+                </View>
+
+                <View>
+                  <Text style={styles.secao}>Endereço</Text>
+
+                  <Text style={styles.descricaoSecao}>
+                    Localização e endereço residencial
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.label}>CEP *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={cep}
+                onChangeText={(texto) => setCep(formatarCep(texto))}
+                placeholder="00000-000"
+                placeholderTextColor="#9ca3af"
+                keyboardType="numeric"
+              />
+
+              <Text style={styles.label}>Rua *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={rua}
+                onChangeText={setRua}
+                placeholder="Nome da rua"
+                placeholderTextColor="#9ca3af"
+                autoCapitalize="words"
+              />
+
+              <View style={styles.linha}>
+                <View style={styles.campoNumero}>
+                  <Text style={styles.label}>Número *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={numero}
+                    onChangeText={setNumero}
+                    placeholder="Número"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numeric"
+                  />
+                </View>
+
+                <View style={styles.campoComplemento}>
+                  <Text style={styles.label}>Bairro *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={bairro}
+                    onChangeText={setBairro}
+                    placeholder="Bairro"
+                    placeholderTextColor="#9ca3af"
+                    autoCapitalize="words"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.linha}>
+                <View style={styles.cidade}>
+                  <Text style={styles.label}>Cidade *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={cidade}
+                    onChangeText={setCidade}
+                    placeholder="Cidade"
+                    placeholderTextColor="#9ca3af"
+                    autoCapitalize="words"
+                  />
+                </View>
+
+                <View style={styles.estado}>
+                  <Text style={styles.label}>UF *</Text>
+
+                  <TextInput
+                    style={styles.input}
+                    value={estado}
+                    onChangeText={setEstado}
+                    placeholder="BA"
+                    placeholderTextColor="#9ca3af"
+                    autoCapitalize="characters"
+                    maxLength={2}
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.label}>Ponto de referência</Text>
+
+              <TextInput
+                style={[styles.input, styles.inputMultiline]}
+                value={pontoReferencia}
+                onChangeText={setPontoReferencia}
+                placeholder="Ex.: próximo à academia..."
+                placeholderTextColor="#9ca3af"
+                multiline
+              />
+            </View>
+
+            {/* Cadastrar */}
+
+            <Permissao permissao="ALUNO_CRIAR" esconder>
+              <TouchableOpacity
+                style={[styles.botao, salvando && styles.botaoDesabilitado]}
+                onPress={salvar}
+                disabled={salvando}
+                activeOpacity={0.8}
+              >
+                {salvando ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text style={styles.botaoTexto}>Cadastrar aluno</Text>
+                )}
+              </TouchableOpacity>
+            </Permissao>
+
+            {/* Cancelar */}
+
+            <TouchableOpacity
+              style={styles.botaoCancelar}
+              onPress={() => router.back()}
+              disabled={salvando}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.botaoCancelarTexto}>Cancelar</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </>
+    </RotaPermissao>
   );
+}
+
+/**
+ * Valida uma data digitada no formato DD/MM/AAAA.
+ *
+ * Não usamos apenas new Date(), porque o JavaScript pode
+ * normalizar datas inexistentes, como 31/02/2026.
+ */
+function validarData(data_digitada: string): boolean {
+  const partes = data_digitada.split("/");
+
+  if (partes.length !== 3) {
+    return false;
+  }
+
+  const dia = Number(partes[0]);
+  const mes = Number(partes[1]);
+  const ano = Number(partes[2]);
+
+  if (
+    !Number.isInteger(dia) ||
+    !Number.isInteger(mes) ||
+    !Number.isInteger(ano)
+  ) {
+    return false;
+  }
+
+  if (partes[0].length !== 2) {
+    return false;
+  }
+
+  if (partes[1].length !== 2) {
+    return false;
+  }
+
+  if (partes[2].length !== 4) {
+    return false;
+  }
+
+  if (mes < 1 || mes > 12) {
+    return false;
+  }
+
+  if (ano < 1900 || ano > new Date().getFullYear()) {
+    return false;
+  }
+
+  const ultimoDiaDoMes = new Date(ano, mes, 0).getDate();
+
+  if (dia < 1 || dia > ultimoDiaDoMes) {
+    return false;
+  }
+
+  return true;
 }
 
 const styles = StyleSheet.create({

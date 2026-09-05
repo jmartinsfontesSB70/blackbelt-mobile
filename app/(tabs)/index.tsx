@@ -20,10 +20,9 @@ export default function HomeScreen() {
     try {
       setMensagem("");
 
-      console.log("ENTREI NA TELA MENU");
       const resposta = await fazerLogin(username.trim(), password);
 
-      setMensagem("Login realizado com sucesso 123! 🎉");
+      setMensagem("Login realizado com sucesso! 🎉");
 
       router.push("/menu");
     } catch (error) {

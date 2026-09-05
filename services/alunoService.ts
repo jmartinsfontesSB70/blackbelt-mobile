@@ -27,3 +27,17 @@ export async function excluirAluno(id: number) {
     method: "DELETE",
   });
 }
+
+export async function listarAlunosParaSelecao() {
+  const primeiraPagina = await listarAlunos(0, 10);
+
+  const alunos = [...primeiraPagina.content];
+
+  for (let pagina = 1; pagina < primeiraPagina.totalPages; pagina++) {
+    const dadosPagina = await listarAlunos(pagina, 10);
+
+    alunos.push(...dadosPagina.content);
+  }
+
+  return alunos;
+}

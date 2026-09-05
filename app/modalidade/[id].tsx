@@ -14,46 +14,42 @@ import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
 
 import {
-  formatarCep,
-  formatarCpf,
-  formatarDataExibicao,
-  formatarTelefone,
-} from "@/utils/masks";
+  buscarModalidade,
+  excluirModalidade,
+} from "@/services/modalidadeService";
 
-import { buscarProfessor, excluirProfessor } from "@/services/professorService";
-
-export default function ProfessorDetalhesScreen() {
+export default function ModalidadeDetalhesScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [professor, setProfessor] = useState<any>(null);
+  const [modalidade, setModalidade] = useState<any>(null);
   const [mensagem, setMensagem] = useState("");
   const [excluindo, setExcluindo] = useState(false);
 
   useEffect(() => {
-    carregarProfessor();
+    carregarModalidade();
   }, [id]);
 
-  async function carregarProfessor() {
+  async function carregarModalidade() {
     try {
       setMensagem("");
 
-      const resposta = await buscarProfessor(id);
+      const resposta = await buscarModalidade(id);
 
-      setProfessor(resposta);
+      setModalidade(resposta);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar professor.");
+        setMensagem("Erro ao carregar modalidade.");
       }
     }
   }
 
   function confirmarExclusao() {
     Alert.alert(
-      "Excluir professor",
-      `Deseja realmente excluir ${professor.nome}?`,
+      "Excluir modalidade",
+      `Deseja realmente excluir ${modalidade.nome}?`,
       [
         {
           text: "Cancelar",
@@ -72,19 +68,19 @@ export default function ProfessorDetalhesScreen() {
     try {
       setExcluindo(true);
 
-      await excluirProfessor(Number(id));
+      await excluirModalidade(Number(id));
 
-      Alert.alert("Sucesso", "Professor excluído com sucesso!", [
+      Alert.alert("Sucesso", "Modalidade excluída com sucesso!", [
         {
           text: "OK",
-          onPress: () => router.dismissTo("/professores"),
+          onPress: () => router.dismissTo("/modalidades"),
         },
       ]);
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert("Não foi possível excluir", error.message);
       } else {
-        Alert.alert("Erro", "Não foi possível excluir o professor.");
+        Alert.alert("Erro", "Não foi possível excluir a modalidade.");
       }
     } finally {
       setExcluindo(false);
@@ -93,7 +89,7 @@ export default function ProfessorDetalhesScreen() {
 
   if (mensagem) {
     return (
-      <RotaPermissao permissao="PROFESSOR_LISTAR">
+      <RotaPermissao permissao="MODALIDADE_LISTAR">
         <View style={styles.erroContainer}>
           <Text style={styles.erroTitulo}>Ops!</Text>
 
@@ -103,24 +99,24 @@ export default function ProfessorDetalhesScreen() {
     );
   }
 
-  if (!professor) {
+  if (!modalidade) {
     return (
-      <RotaPermissao permissao="PROFESSOR_LISTAR">
+      <RotaPermissao permissao="MODALIDADE_LISTAR">
         <View style={styles.carregando}>
           <ActivityIndicator size="large" />
 
-          <Text style={styles.carregandoTexto}>Carregando professor...</Text>
+          <Text style={styles.carregandoTexto}>Carregando modalidade...</Text>
         </View>
       </RotaPermissao>
     );
   }
 
   return (
-    <RotaPermissao permissao="PROFESSOR_LISTAR">
+    <RotaPermissao permissao="MODALIDADE_LISTAR">
       <>
         <Stack.Screen
           options={{
-            title: professor.nome,
+            title: modalidade.nome,
           }}
         />
 
@@ -130,170 +126,91 @@ export default function ProfessorDetalhesScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Cabeçalho */}
+
           <View style={styles.cabecalho}>
             <View style={styles.avatar}>
               <Text style={styles.avatarTexto}>
-                {professor.nome?.charAt(0).toUpperCase()}
+                {modalidade.nome?.charAt(0).toUpperCase()}
               </Text>
             </View>
 
             <View style={styles.cabecalhoInfo}>
-              <Text style={styles.nome}>{professor.nome}</Text>
+              <Text style={styles.nome}>{modalidade.nome}</Text>
 
               <View
                 style={[
                   styles.status,
-                  professor.ativo ? styles.statusAtivo : styles.statusInativo,
+                  modalidade.ativa ? styles.statusAtiva : styles.statusInativa,
                 ]}
               >
                 <Text
                   style={[
                     styles.statusTexto,
-                    professor.ativo
-                      ? styles.statusTextoAtivo
-                      : styles.statusTextoInativo,
+                    modalidade.ativa
+                      ? styles.statusTextoAtiva
+                      : styles.statusTextoInativa,
                   ]}
                 >
-                  {professor.ativo ? "ATIVO" : "INATIVO"}
+                  {modalidade.ativa ? "ATIVA" : "INATIVA"}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* Dados pessoais */}
+          {/* Dados da modalidade */}
+
           <View style={styles.card}>
-            <Text style={styles.secao}>Dados pessoais</Text>
+            <View style={styles.tituloSecao}>
+              <View style={styles.iconeSecao}>
+                <Text style={styles.iconeTexto}>🥋</Text>
+              </View>
+
+              <View>
+                <Text style={styles.secao}>Dados da modalidade</Text>
+
+                <Text style={styles.descricaoSecao}>
+                  Informações da modalidade
+                </Text>
+              </View>
+            </View>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>CPF</Text>
+              <Text style={styles.label}>Nome</Text>
+
+              <Text style={styles.valor}>{modalidade.nome}</Text>
+            </View>
+
+            <View style={styles.campo}>
+              <Text style={styles.label}>Descrição</Text>
 
               <Text style={styles.valor}>
-                {professor.cpf ? formatarCpf(professor.cpf) : "Não informado"}
+                {modalidade.descricao || "Não informada"}
               </Text>
             </View>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>Data de nascimento</Text>
+              <Text style={styles.label}>Situação</Text>
 
               <Text style={styles.valor}>
-                {professor.dataNascimento
-                  ? formatarDataExibicao(professor.dataNascimento)
-                  : "Não informado"}
+                {modalidade.ativa ? "Ativa" : "Inativa"}
               </Text>
             </View>
-
-            <View style={styles.campo}>
-              <Text style={styles.label}>Telefone</Text>
-
-              <Text style={styles.valor}>
-                {professor.telefone
-                  ? formatarTelefone(professor.telefone)
-                  : "Não informado"}
-              </Text>
-            </View>
-
-            <View style={styles.campo}>
-              <Text style={styles.label}>E-mail</Text>
-
-              <Text style={styles.valor}>
-                {professor.email || "Não informado"}
-              </Text>
-            </View>
-          </View>
-
-          {/* Dados profissionais */}
-          <View style={styles.card}>
-            <Text style={styles.secao}>Dados profissionais</Text>
-
-            <View style={styles.campo}>
-              <Text style={styles.label}>Data de contratação</Text>
-
-              <Text style={styles.valor}>
-                {professor.dataContratacao
-                  ? formatarDataExibicao(professor.dataContratacao)
-                  : "Não informado"}
-              </Text>
-            </View>
-
-            <View style={styles.campo}>
-              <Text style={styles.label}>Valor da hora aula</Text>
-
-              <Text style={styles.valor}>
-                {professor.valorHoraAula != null
-                  ? `R$ ${Number(professor.valorHoraAula)
-                      .toFixed(2)
-                      .replace(".", ",")}`
-                  : "Não informado"}
-              </Text>
-            </View>
-          </View>
-
-          {/* Endereço */}
-          <View style={styles.card}>
-            <Text style={styles.secao}>Endereço</Text>
-
-            {professor.endereco ? (
-              <>
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Rua</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.rua}, {professor.endereco.numero}
-                  </Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Bairro</Text>
-
-                  <Text style={styles.valor}>{professor.endereco.bairro}</Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>Cidade / Estado</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.cidade} - {professor.endereco.estado}
-                  </Text>
-                </View>
-
-                <View style={styles.campo}>
-                  <Text style={styles.label}>CEP</Text>
-
-                  <Text style={styles.valor}>
-                    {professor.endereco.cep
-                      ? formatarCep(professor.endereco.cep)
-                      : "Não informado"}
-                  </Text>
-                </View>
-
-                {professor.endereco.pontoReferencia ? (
-                  <View style={styles.campo}>
-                    <Text style={styles.label}>Ponto de referência</Text>
-
-                    <Text style={styles.valor}>
-                      {professor.endereco.pontoReferencia}
-                    </Text>
-                  </View>
-                ) : null}
-              </>
-            ) : (
-              <Text style={styles.semEndereco}>Endereço não informado.</Text>
-            )}
           </View>
 
           {/* Ações */}
+
           <View style={styles.acoes}>
-            <Permissao permissao="PROFESSOR_EDITAR" esconder>
+            <Permissao permissao="MODALIDADE_EDITAR" esconder>
               <Pressable
                 style={styles.botaoEditar}
-                onPress={() => router.push(`/professor/editar/${id}`)}
+                onPress={() => router.push(`/modalidade/editar/${id}`)}
                 disabled={excluindo}
               >
                 <Text style={styles.botaoEditarTexto}>✏️ Editar</Text>
               </Pressable>
             </Permissao>
 
-            <Permissao permissao="PROFESSOR_EXCLUIR" esconder>
+            <Permissao permissao="MODALIDADE_EXCLUIR" esconder>
               <Pressable
                 style={[
                   styles.botaoExcluir,
@@ -326,13 +243,13 @@ const styles = StyleSheet.create({
 
   container: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 50,
   },
 
   cabecalho: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 20,
   },
 
   avatar: {
@@ -369,11 +286,11 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
 
-  statusAtivo: {
+  statusAtiva: {
     backgroundColor: "#dcfce7",
   },
 
-  statusInativo: {
+  statusInativa: {
     backgroundColor: "#fee2e2",
   },
 
@@ -382,18 +299,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  statusTextoAtivo: {
+  statusTextoAtiva: {
     color: "#166534",
   },
 
-  statusTextoInativo: {
+  statusTextoInativa: {
     color: "#991b1b",
   },
 
   card: {
     backgroundColor: "#ffffff",
     borderRadius: 16,
-    padding: 20,
+    padding: 18,
     marginBottom: 16,
     elevation: 2,
     shadowColor: "#000000",
@@ -405,11 +322,36 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
 
+  tituloSecao: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+
+  iconeSecao: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#f3f4f6",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+
+  iconeTexto: {
+    fontSize: 20,
+  },
+
   secao: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#111827",
-    marginBottom: 6,
+  },
+
+  descricaoSecao: {
+    fontSize: 12,
+    color: "#9ca3af",
+    marginTop: 2,
   },
 
   campo: {
@@ -428,12 +370,6 @@ const styles = StyleSheet.create({
   valor: {
     fontSize: 16,
     color: "#111827",
-  },
-
-  semEndereco: {
-    color: "#6b7280",
-    fontSize: 15,
-    marginTop: 8,
   },
 
   acoes: {

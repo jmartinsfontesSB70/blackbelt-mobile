@@ -10,16 +10,16 @@ import {
   View,
 } from "react-native";
 
-import AlunoCard from "@/components/AlunoCard";
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
-import { listarAlunos } from "@/services/alunoService";
-import { formatarCpf } from "@/utils/masks";
+import TurmaCard from "@/components/TurmaCard";
 
-export default function AlunosScreen() {
+import { listarTurmas } from "@/services/turmaService";
+
+export default function TurmasScreen() {
   const router = useRouter();
 
-  const [alunos, setAlunos] = useState<any[]>([]);
+  const [turmas, setTurmas] = useState<any[]>([]);
   const [mensagem, setMensagem] = useState("");
   const [pagina, setPagina] = useState(0);
   const [temMais, setTemMais] = useState(true);
@@ -30,18 +30,18 @@ export default function AlunosScreen() {
       setCarregando(true);
       setMensagem("");
 
-      const resposta = await listarAlunos(0, 10);
+      const resposta = await listarTurmas(0, 10);
 
-      const novosAlunos = resposta.content ?? resposta;
+      const novasTurmas = resposta.content ?? resposta;
 
-      setAlunos(novosAlunos);
+      setTurmas(novasTurmas);
       setPagina(0);
       setTemMais(!resposta.last);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar alunos.");
+        setMensagem("Erro ao carregar turmas.");
       }
     } finally {
       setCarregando(false);
@@ -64,11 +64,11 @@ export default function AlunosScreen() {
 
       const proximaPagina = pagina + 1;
 
-      const resposta = await listarAlunos(proximaPagina, 10);
+      const resposta = await listarTurmas(proximaPagina, 10);
 
-      const novosAlunos = resposta.content ?? resposta;
+      const novasTurmas = resposta.content ?? resposta;
 
-      setAlunos((alunosAtuais) => [...alunosAtuais, ...novosAlunos]);
+      setTurmas((turmasAtuais) => [...turmasAtuais, ...novasTurmas]);
 
       setPagina(proximaPagina);
       setTemMais(!resposta.last);
@@ -76,7 +76,7 @@ export default function AlunosScreen() {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar alunos.");
+        setMensagem("Erro ao carregar turmas.");
       }
     } finally {
       setCarregando(false);
@@ -84,17 +84,17 @@ export default function AlunosScreen() {
   }
 
   return (
-    <RotaPermissao permissao="ALUNO_LISTAR">
+    <RotaPermissao permissao="TURMA_LISTAR">
       <View style={styles.container}>
         <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Alunos</Text>
+          <Text style={styles.titulo}>Turmas</Text>
 
-          <Permissao permissao="ALUNO_CRIAR" esconder>
+          <Permissao permissao="TURMA_CRIAR" esconder>
             <Pressable
               style={styles.botaoNovo}
-              onPress={() => router.push("/aluno/novo")}
+              onPress={() => router.push("/turma/novo")}
             >
-              <Text style={styles.botaoNovoTexto}>+ Novo aluno</Text>
+              <Text style={styles.botaoNovoTexto}>+ Nova turma</Text>
             </Pressable>
           </Permissao>
         </View>
@@ -103,13 +103,19 @@ export default function AlunosScreen() {
           <Text style={styles.mensagem}>{mensagem}</Text>
         ) : (
           <FlatList
-            data={alunos}
-            keyExtractor={(aluno) => aluno.id.toString()}
+            data={turmas}
+            keyExtractor={(turma) => turma.id.toString()}
             renderItem={({ item }) => (
-              <AlunoCard
+              <TurmaCard
                 nome={item.nome}
-                cpf={item.cpf ? formatarCpf(item.cpf) : ""}
-                onPress={() => router.push(`/aluno/${item.id}`)}
+                modalidadeNome={item.modalidadeNome}
+                professorNome={item.professorNome}
+                diasSemana={item.diasSemana}
+                horarioInicio={item.horarioInicio}
+                horarioFim={item.horarioFim}
+                capacidade={item.capacidade}
+                ativa={item.ativa}
+                onPress={() => router.push(`/turma/${item.id}`)}
               />
             )}
             onEndReached={carregarProximaPagina}

@@ -10,15 +10,17 @@ import {
   View,
 } from "react-native";
 
+import Permissao from "@/components/Permissao";
+import RotaPermissao from "@/components/RotaPermissao";
+
+import { buscarAluno, excluirAluno } from "@/services/alunoService";
+
 import {
   formatarCep,
   formatarCpf,
   formatarDataExibicao,
   formatarTelefone,
 } from "@/utils/masks";
-
-import { excluirAluno } from "@/services/alunoService";
-import { apiFetch } from "@/services/api";
 
 export default function AlunoDetalhesScreen() {
   const router = useRouter();
@@ -33,12 +35,10 @@ export default function AlunoDetalhesScreen() {
   }, [id]);
 
   async function carregarAluno() {
-    console.log("📡 GET DETALHE DO ALUNO:", id);
-
     try {
       setMensagem("");
 
-      const resposta = await apiFetch(`/alunos/${id}`);
+      const resposta = await buscarAluno(id);
 
       setAluno(resposta);
     } catch (error) {
@@ -89,186 +89,227 @@ export default function AlunoDetalhesScreen() {
 
   if (mensagem) {
     return (
-      <View style={styles.erroContainer}>
-        <Text style={styles.erroTitulo}>Ops!</Text>
+      <RotaPermissao permissao="ALUNO_LISTAR">
+        <View style={styles.erroContainer}>
+          <Text style={styles.erroTitulo}>Ops!</Text>
 
-        <Text style={styles.erro}>{mensagem}</Text>
-      </View>
+          <Text style={styles.erro}>{mensagem}</Text>
+        </View>
+      </RotaPermissao>
     );
   }
 
   if (!aluno) {
     return (
-      <View style={styles.carregando}>
-        <ActivityIndicator size="large" />
+      <RotaPermissao permissao="ALUNO_LISTAR">
+        <View style={styles.carregando}>
+          <ActivityIndicator size="large" />
 
-        <Text style={styles.carregandoTexto}>Carregando aluno...</Text>
-      </View>
+          <Text style={styles.carregandoTexto}>Carregando aluno...</Text>
+        </View>
+      </RotaPermissao>
     );
   }
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: aluno.nome,
-        }}
-      />
+    <RotaPermissao permissao="ALUNO_LISTAR">
+      <>
+        <Stack.Screen
+          options={{
+            title: aluno.nome,
+          }}
+        />
 
-      <ScrollView
-        style={styles.tela}
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Cabeçalho */}
-        <View style={styles.cabecalho}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarTexto}>
-              {aluno.nome?.charAt(0).toUpperCase()}
-            </Text>
-          </View>
+        <ScrollView
+          style={styles.tela}
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Cabeçalho */}
 
-          <View style={styles.cabecalhoInfo}>
-            <Text style={styles.nome}>{aluno.nome}</Text>
-
-            <View
-              style={[
-                styles.status,
-                aluno.ativo ? styles.statusAtivo : styles.statusInativo,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.statusTexto,
-                  aluno.ativo
-                    ? styles.statusTextoAtivo
-                    : styles.statusTextoInativo,
-                ]}
-              >
-                {aluno.ativo ? "ATIVO" : "INATIVO"}
+          <View style={styles.cabecalho}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarTexto}>
+                {aluno.nome?.charAt(0).toUpperCase()}
               </Text>
             </View>
-          </View>
-        </View>
 
-        {/* Dados pessoais */}
-        <View style={styles.card}>
-          <Text style={styles.secao}>Dados pessoais</Text>
+            <View style={styles.cabecalhoInfo}>
+              <Text style={styles.nome}>{aluno.nome}</Text>
 
-          <View style={styles.campo}>
-            <Text style={styles.label}>CPF</Text>
-
-            <Text style={styles.valor}>
-              {aluno.cpf ? formatarCpf(aluno.cpf) : "Não informado"}
-            </Text>
-          </View>
-
-          <View style={styles.campo}>
-            <Text style={styles.label}>Data de nascimento</Text>
-
-            <Text style={styles.valor}>
-              {aluno.dataNascimento
-                ? formatarDataExibicao(aluno.dataNascimento)
-                : "Não informado"}
-            </Text>
-          </View>
-
-          <View style={styles.campo}>
-            <Text style={styles.label}>Telefone</Text>
-
-            <Text style={styles.valor}>
-              {aluno.telefone
-                ? formatarTelefone(aluno.telefone)
-                : "Não informado"}
-            </Text>
-          </View>
-
-          <View style={styles.campo}>
-            <Text style={styles.label}>E-mail</Text>
-
-            <Text style={styles.valor}>{aluno.email || "Não informado"}</Text>
-          </View>
-        </View>
-
-        {/* Endereço */}
-        <View style={styles.card}>
-          <Text style={styles.secao}>Endereço</Text>
-
-          {aluno.endereco ? (
-            <>
-              <View style={styles.campo}>
-                <Text style={styles.label}>Rua</Text>
-
-                <Text style={styles.valor}>
-                  {aluno.endereco.rua}, {aluno.endereco.numero}
+              <View
+                style={[
+                  styles.status,
+                  aluno.ativo ? styles.statusAtivo : styles.statusInativo,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.statusTexto,
+                    aluno.ativo
+                      ? styles.statusTextoAtivo
+                      : styles.statusTextoInativo,
+                  ]}
+                >
+                  {aluno.ativo ? "ATIVO" : "INATIVO"}
                 </Text>
               </View>
+            </View>
+          </View>
 
-              <View style={styles.campo}>
-                <Text style={styles.label}>Bairro</Text>
+          {/* Dados pessoais */}
 
-                <Text style={styles.valor}>{aluno.endereco.bairro}</Text>
+          <View style={styles.card}>
+            <View style={styles.tituloSecao}>
+              <View style={styles.iconeSecao}>
+                <Text style={styles.iconeTexto}>👤</Text>
               </View>
 
-              <View style={styles.campo}>
-                <Text style={styles.label}>Cidade / Estado</Text>
+              <View>
+                <Text style={styles.secao}>Dados pessoais</Text>
 
-                <Text style={styles.valor}>
-                  {aluno.endereco.cidade} - {aluno.endereco.estado}
+                <Text style={styles.descricaoSecao}>
+                  Informações básicas do aluno
                 </Text>
               </View>
+            </View>
 
-              <View style={styles.campo}>
-                <Text style={styles.label}>CEP</Text>
+            <View style={styles.campo}>
+              <Text style={styles.label}>CPF</Text>
 
-                <Text style={styles.valor}>
-                  {aluno.endereco.cep
-                    ? formatarCep(aluno.endereco.cep)
-                    : "Não informado"}
-                </Text>
+              <Text style={styles.valor}>
+                {aluno.cpf ? formatarCpf(aluno.cpf) : "Não informado"}
+              </Text>
+            </View>
+
+            <View style={styles.campo}>
+              <Text style={styles.label}>Data de nascimento</Text>
+
+              <Text style={styles.valor}>
+                {aluno.dataNascimento
+                  ? formatarDataExibicao(aluno.dataNascimento)
+                  : "Não informado"}
+              </Text>
+            </View>
+
+            <View style={styles.campo}>
+              <Text style={styles.label}>Telefone</Text>
+
+              <Text style={styles.valor}>
+                {aluno.telefone
+                  ? formatarTelefone(aluno.telefone)
+                  : "Não informado"}
+              </Text>
+            </View>
+
+            <View style={styles.campo}>
+              <Text style={styles.label}>E-mail</Text>
+
+              <Text style={styles.valor}>{aluno.email || "Não informado"}</Text>
+            </View>
+          </View>
+
+          {/* Endereço */}
+
+          <View style={styles.card}>
+            <View style={styles.tituloSecao}>
+              <View style={styles.iconeSecao}>
+                <Text style={styles.iconeTexto}>📍</Text>
               </View>
 
-              {aluno.endereco.pontoReferencia ? (
+              <View>
+                <Text style={styles.secao}>Endereço</Text>
+
+                <Text style={styles.descricaoSecao}>
+                  Localização e endereço residencial
+                </Text>
+              </View>
+            </View>
+
+            {aluno.endereco ? (
+              <>
                 <View style={styles.campo}>
-                  <Text style={styles.label}>Ponto de referência</Text>
+                  <Text style={styles.label}>Rua</Text>
 
                   <Text style={styles.valor}>
-                    {aluno.endereco.pontoReferencia}
+                    {aluno.endereco.rua}, {aluno.endereco.numero}
                   </Text>
                 </View>
-              ) : null}
-            </>
-          ) : (
-            <Text style={styles.semEndereco}>Endereço não informado.</Text>
-          )}
-        </View>
 
-        {/* Ações */}
-        <View style={styles.acoes}>
-          <Pressable
-            style={styles.botaoEditar}
-            onPress={() => router.push(`/aluno/editar/${id}`)}
-            disabled={excluindo}
-          >
-            <Text style={styles.botaoEditarTexto}>✏️ Editar</Text>
-          </Pressable>
+                <View style={styles.campo}>
+                  <Text style={styles.label}>Bairro</Text>
 
-          <Pressable
-            style={[styles.botaoExcluir, excluindo && styles.botaoDesabilitado]}
-            onPress={confirmarExclusao}
-            disabled={excluindo}
-          >
-            {excluindo ? (
-              <ActivityIndicator />
+                  <Text style={styles.valor}>{aluno.endereco.bairro}</Text>
+                </View>
+
+                <View style={styles.campo}>
+                  <Text style={styles.label}>Cidade / Estado</Text>
+
+                  <Text style={styles.valor}>
+                    {aluno.endereco.cidade} - {aluno.endereco.estado}
+                  </Text>
+                </View>
+
+                <View style={styles.campo}>
+                  <Text style={styles.label}>CEP</Text>
+
+                  <Text style={styles.valor}>
+                    {aluno.endereco.cep
+                      ? formatarCep(aluno.endereco.cep)
+                      : "Não informado"}
+                  </Text>
+                </View>
+
+                {aluno.endereco.pontoReferencia ? (
+                  <View style={styles.campo}>
+                    <Text style={styles.label}>Ponto de referência</Text>
+
+                    <Text style={styles.valor}>
+                      {aluno.endereco.pontoReferencia}
+                    </Text>
+                  </View>
+                ) : null}
+              </>
             ) : (
-              <Text style={styles.botaoExcluirTexto}>🗑️ Excluir</Text>
+              <Text style={styles.semEndereco}>Endereço não informado.</Text>
             )}
-          </Pressable>
-        </View>
+          </View>
 
-        <Text style={styles.rodape}>BlackBelt</Text>
-      </ScrollView>
-    </>
+          {/* Ações */}
+
+          <View style={styles.acoes}>
+            <Permissao permissao="ALUNO_EDITAR" esconder>
+              <Pressable
+                style={styles.botaoEditar}
+                onPress={() => router.push(`/aluno/editar/${id}`)}
+                disabled={excluindo}
+              >
+                <Text style={styles.botaoEditarTexto}>✏️ Editar</Text>
+              </Pressable>
+            </Permissao>
+
+            <Permissao permissao="ALUNO_EXCLUIR" esconder>
+              <Pressable
+                style={[
+                  styles.botaoExcluir,
+                  excluindo && styles.botaoDesabilitado,
+                ]}
+                onPress={confirmarExclusao}
+                disabled={excluindo}
+              >
+                {excluindo ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Text style={styles.botaoExcluirTexto}>🗑️ Excluir</Text>
+                )}
+              </Pressable>
+            </Permissao>
+          </View>
+
+          <Text style={styles.rodape}>BlackBelt</Text>
+        </ScrollView>
+      </>
+    </RotaPermissao>
   );
 }
 
@@ -280,13 +321,13 @@ const styles = StyleSheet.create({
 
   container: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 50,
   },
 
   cabecalho: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 20,
   },
 
   avatar: {
@@ -347,7 +388,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#ffffff",
     borderRadius: 16,
-    padding: 20,
+    padding: 18,
     marginBottom: 16,
     elevation: 2,
     shadowColor: "#000000",
@@ -359,11 +400,36 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
 
+  tituloSecao: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+
+  iconeSecao: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#f3f4f6",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+
+  iconeTexto: {
+    fontSize: 20,
+  },
+
   secao: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#111827",
-    marginBottom: 6,
+  },
+
+  descricaoSecao: {
+    fontSize: 12,
+    color: "#9ca3af",
+    marginTop: 2,
   },
 
   campo: {

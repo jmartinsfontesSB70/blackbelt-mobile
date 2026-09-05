@@ -10,16 +10,16 @@ import {
   View,
 } from "react-native";
 
-import AlunoCard from "@/components/AlunoCard";
+import ModalidadeCard from "@/components/ModalidadeCard";
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
-import { listarAlunos } from "@/services/alunoService";
-import { formatarCpf } from "@/utils/masks";
 
-export default function AlunosScreen() {
+import { listarModalidades } from "@/services/modalidadeService";
+
+export default function ModalidadesScreen() {
   const router = useRouter();
 
-  const [alunos, setAlunos] = useState<any[]>([]);
+  const [modalidades, setModalidades] = useState<any[]>([]);
   const [mensagem, setMensagem] = useState("");
   const [pagina, setPagina] = useState(0);
   const [temMais, setTemMais] = useState(true);
@@ -30,18 +30,18 @@ export default function AlunosScreen() {
       setCarregando(true);
       setMensagem("");
 
-      const resposta = await listarAlunos(0, 10);
+      const resposta = await listarModalidades(0, 10);
 
-      const novosAlunos = resposta.content ?? resposta;
+      const novasModalidades = resposta.content ?? resposta;
 
-      setAlunos(novosAlunos);
+      setModalidades(novasModalidades);
       setPagina(0);
       setTemMais(!resposta.last);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar alunos.");
+        setMensagem("Erro ao carregar modalidades.");
       }
     } finally {
       setCarregando(false);
@@ -64,11 +64,14 @@ export default function AlunosScreen() {
 
       const proximaPagina = pagina + 1;
 
-      const resposta = await listarAlunos(proximaPagina, 10);
+      const resposta = await listarModalidades(proximaPagina, 10);
 
-      const novosAlunos = resposta.content ?? resposta;
+      const novasModalidades = resposta.content ?? resposta;
 
-      setAlunos((alunosAtuais) => [...alunosAtuais, ...novosAlunos]);
+      setModalidades((modalidadesAtuais) => [
+        ...modalidadesAtuais,
+        ...novasModalidades,
+      ]);
 
       setPagina(proximaPagina);
       setTemMais(!resposta.last);
@@ -76,7 +79,7 @@ export default function AlunosScreen() {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar alunos.");
+        setMensagem("Erro ao carregar modalidades.");
       }
     } finally {
       setCarregando(false);
@@ -84,17 +87,17 @@ export default function AlunosScreen() {
   }
 
   return (
-    <RotaPermissao permissao="ALUNO_LISTAR">
+    <RotaPermissao permissao="MODALIDADE_LISTAR">
       <View style={styles.container}>
         <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Alunos</Text>
+          <Text style={styles.titulo}>Modalidades</Text>
 
-          <Permissao permissao="ALUNO_CRIAR" esconder>
+          <Permissao permissao="MODALIDADE_CRIAR" esconder>
             <Pressable
               style={styles.botaoNovo}
-              onPress={() => router.push("/aluno/novo")}
+              onPress={() => router.push("/modalidade/novo")}
             >
-              <Text style={styles.botaoNovoTexto}>+ Novo aluno</Text>
+              <Text style={styles.botaoNovoTexto}>+ Nova modalidade</Text>
             </Pressable>
           </Permissao>
         </View>
@@ -103,13 +106,14 @@ export default function AlunosScreen() {
           <Text style={styles.mensagem}>{mensagem}</Text>
         ) : (
           <FlatList
-            data={alunos}
-            keyExtractor={(aluno) => aluno.id.toString()}
+            data={modalidades}
+            keyExtractor={(modalidade) => modalidade.id.toString()}
             renderItem={({ item }) => (
-              <AlunoCard
+              <ModalidadeCard
                 nome={item.nome}
-                cpf={item.cpf ? formatarCpf(item.cpf) : ""}
-                onPress={() => router.push(`/aluno/${item.id}`)}
+                descricao={item.descricao}
+                ativa={item.ativa}
+                onPress={() => router.push(`/modalidade/${item.id}`)}
               />
             )}
             onEndReached={carregarProximaPagina}
