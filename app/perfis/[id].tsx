@@ -157,7 +157,7 @@ export default function PerfilDetalhesScreen() {
     return (
       <RotaPermissao permissao="PERFIL_LISTAR">
         <View style={styles.carregando}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color="#C1121F" />
 
           <Text style={styles.carregandoTexto}>Carregando perfil...</Text>
         </View>
@@ -301,7 +301,7 @@ export default function PerfilDetalhesScreen() {
                   disabled={excluindo}
                 >
                   {excluindo ? (
-                    <ActivityIndicator />
+                    <ActivityIndicator color="#F08A91" />
                   ) : (
                     <Text style={styles.botaoExcluirTexto}>🗑️ Excluir</Text>
                   )}
@@ -329,12 +329,12 @@ function formatarPermissao(nome: string) {
 const styles = StyleSheet.create({
   tela: {
     flex: 1,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   container: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 80,
   },
 
   cabecalho: {
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
@@ -364,20 +364,22 @@ const styles = StyleSheet.create({
   nome: {
     fontSize: 23,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
     marginBottom: 7,
   },
 
   status: {
     alignSelf: "flex-start",
-    backgroundColor: "#e0e7ff",
+    backgroundColor: "#12351F",
+    borderWidth: 1,
+    borderColor: "#2A6B43",
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
 
   statusTexto: {
-    color: "#3730a3",
+    color: "#75D89A",
     fontSize: 11,
     fontWeight: "bold",
   },
@@ -385,9 +387,9 @@ const styles = StyleSheet.create({
   avisoProtegido: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fef3c7",
+    backgroundColor: "#2A2110",
     borderWidth: 1,
-    borderColor: "#fcd34d",
+    borderColor: "#6B5422",
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
@@ -405,18 +407,20 @@ const styles = StyleSheet.create({
   avisoTitulo: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#92400e",
+    color: "#F0C96A",
     marginBottom: 3,
   },
 
   avisoTexto: {
     fontSize: 12,
-    color: "#92400e",
+    color: "#DDBF75",
     lineHeight: 17,
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
+    borderWidth: 1,
+    borderColor: "#242424",
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
@@ -426,20 +430,20 @@ const styles = StyleSheet.create({
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
   },
 
   secao: {
     fontSize: 19,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
     marginBottom: 6,
   },
 
   descricaoSecao: {
     fontSize: 13,
-    color: "#9ca3af",
+    color: "#888888",
     marginBottom: 12,
   },
 
@@ -449,35 +453,36 @@ const styles = StyleSheet.create({
 
   campo: {
     borderBottomWidth: 1,
-    borderBottomColor: "#eeeeee",
+    borderBottomColor: "#2B2B2B",
     paddingVertical: 10,
   },
 
   label: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#6b7280",
+    color: "#888888",
     marginBottom: 4,
   },
 
   valor: {
     fontSize: 16,
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   grupo: {
     marginTop: 12,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#2B2B2B",
     borderRadius: 12,
     overflow: "hidden",
+    backgroundColor: "#151515",
   },
 
   grupoCabecalho: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#0D0D0D",
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
@@ -485,7 +490,7 @@ const styles = StyleSheet.create({
   grupoNome: {
     fontSize: 13,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   grupoQuantidade: {
@@ -493,8 +498,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 12,
     fontWeight: "bold",
-    color: "#4b5563",
-    backgroundColor: "#e5e7eb",
+    color: "#CCCCCC",
+    backgroundColor: "#242424",
     borderRadius: 12,
     paddingHorizontal: 7,
     paddingVertical: 3,
@@ -506,21 +511,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: "#f3f4f6",
+    borderTopColor: "#2B2B2B",
   },
 
   check: {
     width: 22,
     height: 22,
     borderRadius: 6,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
   },
 
   checkTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "bold",
   },
@@ -528,11 +533,11 @@ const styles = StyleSheet.create({
   permissaoNome: {
     flex: 1,
     fontSize: 14,
-    color: "#374151",
+    color: "#CCCCCC",
   },
 
   vazio: {
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 14,
     textAlign: "center",
     marginVertical: 20,
@@ -547,13 +552,13 @@ const styles = StyleSheet.create({
   botaoEditar: {
     height: 50,
     borderRadius: 12,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     alignItems: "center",
     justifyContent: "center",
   },
 
   botaoEditarTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -561,15 +566,15 @@ const styles = StyleSheet.create({
   botaoExcluir: {
     height: 50,
     borderRadius: 12,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderWidth: 1,
-    borderColor: "#fecaca",
+    borderColor: "#5A2529",
     alignItems: "center",
     justifyContent: "center",
   },
 
   botaoExcluirTexto: {
-    color: "#b91c1c",
+    color: "#F08A91",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -582,12 +587,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   carregandoTexto: {
     marginTop: 12,
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 15,
   },
 
@@ -596,26 +601,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   erroTitulo: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 8,
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   erro: {
     fontSize: 16,
     textAlign: "center",
-    color: "#6b7280",
+    color: "#E04B55",
   },
 
   rodape: {
     textAlign: "center",
     marginTop: 8,
-    color: "#9ca3af",
+    color: "#444444",
     fontSize: 13,
   },
 });

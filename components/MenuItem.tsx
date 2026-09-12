@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type MenuItemProps = {
   titulo: string;
@@ -7,35 +7,59 @@ type MenuItemProps = {
 
 export default function MenuItem({ titulo, onPress }: MenuItemProps) {
   return (
-    <TouchableOpacity style={styles.item} onPress={onPress} activeOpacity={0.7}>
-      <Text style={styles.texto}>{titulo}</Text>
+    <TouchableOpacity
+      style={styles.item}
+      onPress={onPress}
+      activeOpacity={0.75}
+    >
+      <View style={styles.conteudo}>
+        <Text style={styles.texto}>{titulo}</Text>
+
+        <Text style={styles.seta}>›</Text>
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   item: {
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: "#111",
+    height: 58,
+    borderRadius: 14,
+    backgroundColor: "#151515",
+    borderWidth: 1,
+    borderColor: "#242424",
     justifyContent: "center",
-    paddingHorizontal: 20,
-    marginBottom: 14,
+    paddingHorizontal: 18,
+    marginBottom: 12,
 
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 3,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
 
-    elevation: 3,
+    elevation: 4,
+  },
+
+  conteudo: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 
   texto: {
-    color: "#fff",
-    fontSize: 17,
+    color: "#FFFFFF",
+    fontSize: 16,
     fontWeight: "600",
+  },
+
+  seta: {
+    color: "#777777",
+    fontSize: 30,
+    fontWeight: "300",
+    lineHeight: 30,
+    marginTop: -2,
   },
 });

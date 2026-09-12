@@ -10,7 +10,6 @@ export default function AlunoCard({ nome, cpf, onPress }: AlunoCardProps) {
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <Text style={styles.nome}>{nome}</Text>
-
       <Text style={styles.dado}>CPF: {cpf || "Não informado"}</Text>
     </Pressable>
   );
@@ -18,23 +17,25 @@ export default function AlunoCard({ nome, cpf, onPress }: AlunoCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 14,
     padding: 16,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#242424",
     elevation: 2,
   },
 
   nome: {
     fontSize: 17,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
     marginBottom: 6,
   },
 
   dado: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 2,
   },
 });

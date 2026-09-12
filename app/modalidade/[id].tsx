@@ -238,7 +238,7 @@ export default function ModalidadeDetalhesScreen() {
 const styles = StyleSheet.create({
   tela: {
     flex: 1,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   container: {
@@ -256,14 +256,14 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
   },
 
   avatarTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 28,
     fontWeight: "bold",
   },
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   nome: {
     fontSize: 23,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
     marginBottom: 7,
   },
 
@@ -287,11 +287,11 @@ const styles = StyleSheet.create({
   },
 
   statusAtiva: {
-    backgroundColor: "#dcfce7",
+    backgroundColor: "#12351F",
   },
 
   statusInativa: {
-    backgroundColor: "#fee2e2",
+    backgroundColor: "#3A171A",
   },
 
   statusTexto: {
@@ -300,25 +300,27 @@ const styles = StyleSheet.create({
   },
 
   statusTextoAtiva: {
-    color: "#166534",
+    color: "#75D89A",
   },
 
   statusTextoInativa: {
-    color: "#991b1b",
+    color: "#F08A91",
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 16,
     padding: 18,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#242424",
     elevation: 2,
     shadowColor: "#000000",
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
   },
 
@@ -332,7 +334,9 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#0D0D0D",
+    borderWidth: 1,
+    borderColor: "#2B2B2B",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -345,31 +349,31 @@ const styles = StyleSheet.create({
   secao: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   descricaoSecao: {
     fontSize: 12,
-    color: "#9ca3af",
+    color: "#888888",
     marginTop: 2,
   },
 
   campo: {
     borderBottomWidth: 1,
-    borderBottomColor: "#eeeeee",
+    borderBottomColor: "#2B2B2B",
     paddingVertical: 10,
   },
 
   label: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#6b7280",
+    color: "#888888",
     marginBottom: 4,
   },
 
   valor: {
     fontSize: 16,
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   acoes: {
@@ -381,13 +385,13 @@ const styles = StyleSheet.create({
   botaoEditar: {
     height: 50,
     borderRadius: 12,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     alignItems: "center",
     justifyContent: "center",
   },
 
   botaoEditarTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -395,15 +399,15 @@ const styles = StyleSheet.create({
   botaoExcluir: {
     height: 50,
     borderRadius: 12,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderWidth: 1,
-    borderColor: "#fecaca",
+    borderColor: "#5A2529",
     alignItems: "center",
     justifyContent: "center",
   },
 
   botaoExcluirTexto: {
-    color: "#b91c1c",
+    color: "#F08A91",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -416,12 +420,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   carregandoTexto: {
     marginTop: 12,
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 15,
   },
 
@@ -430,26 +434,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   erroTitulo: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 8,
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   erro: {
     fontSize: 16,
     textAlign: "center",
-    color: "#6b7280",
+    color: "#E04B55",
   },
 
   rodape: {
     textAlign: "center",
     marginTop: 8,
-    color: "#9ca3af",
+    color: "#555555",
     fontSize: 13,
   },
 });

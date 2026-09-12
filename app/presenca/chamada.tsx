@@ -296,6 +296,7 @@ export default function ChamadaScreen() {
           style={styles.container}
           contentContainerStyle={styles.conteudo}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View style={styles.card}>
             <Text style={styles.titulo}>Registrar chamada</Text>
@@ -323,7 +324,7 @@ export default function ChamadaScreen() {
                 value={data}
                 onChangeText={alterarData}
                 placeholder="DD/MM/AAAA"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 keyboardType="numeric"
                 maxLength={10}
               />
@@ -334,7 +335,7 @@ export default function ChamadaScreen() {
 
           {carregandoAlunos ? (
             <View style={styles.carregando}>
-              <ActivityIndicator size="large" />
+              <ActivityIndicator size="large" color="#C1121F" />
 
               <Text style={styles.textoCarregando}>Carregando alunos...</Text>
             </View>
@@ -413,7 +414,12 @@ export default function ChamadaScreen() {
                             {matricula.alunoNome}
                           </Text>
 
-                          <Text style={styles.statusAluno}>
+                          <Text
+                            style={[
+                              styles.statusAluno,
+                              presente && styles.statusAlunoPresente,
+                            ]}
+                          >
                             {presente ? "Presente" : "Ausente"}
                           </Text>
                         </View>
@@ -433,12 +439,20 @@ export default function ChamadaScreen() {
                   disabled={salvando}
                 >
                   {salvando ? (
-                    <ActivityIndicator color="#ffffff" />
+                    <ActivityIndicator color="#FFFFFF" />
                   ) : (
                     <Text style={styles.textoBotaoSalvar}>Salvar chamada</Text>
                   )}
                 </Pressable>
               </Permissao>
+
+              <Pressable
+                style={styles.botaoCancelar}
+                onPress={() => router.back()}
+                disabled={salvando}
+              >
+                <Text style={styles.textoBotaoCancelar}>Cancelar</Text>
+              </Pressable>
             </>
           ) : null}
 
@@ -464,31 +478,41 @@ export default function ChamadaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   conteudo: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 80,
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#242424",
+    elevation: 2,
+    shadowColor: "#000000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
 
   titulo: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#111827",
+    color: "#FFFFFF",
     marginBottom: 6,
   },
 
   subtitulo: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#888888",
     marginBottom: 20,
     lineHeight: 20,
   },
@@ -500,23 +524,23 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#374151",
+    color: "#CCCCCC",
     marginBottom: 7,
   },
 
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: "#d1d5db",
+    borderColor: "#2B2B2B",
     borderRadius: 8,
     paddingHorizontal: 12,
     fontSize: 16,
-    color: "#111827",
-    backgroundColor: "#ffffff",
+    color: "#FFFFFF",
+    backgroundColor: "#0D0D0D",
   },
 
   erro: {
-    color: "#dc2626",
+    color: "#E04B55",
     fontSize: 14,
     marginTop: 12,
   },
@@ -528,7 +552,7 @@ const styles = StyleSheet.create({
 
   textoCarregando: {
     marginTop: 10,
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 14,
   },
 
@@ -542,12 +566,12 @@ const styles = StyleSheet.create({
   tituloSecao: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   textoResumo: {
     fontSize: 13,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 3,
   },
 
@@ -558,23 +582,24 @@ const styles = StyleSheet.create({
 
   botaoAcao: {
     borderWidth: 1,
-    borderColor: "#d1d5db",
+    borderColor: "#2B2B2B",
     borderRadius: 7,
     paddingHorizontal: 9,
     paddingVertical: 7,
+    backgroundColor: "#0D0D0D",
   },
 
   textoBotaoAcao: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#374151",
+    color: "#CCCCCC",
   },
 
   resumo: {
     flexDirection: "row",
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#2B2B2B",
     paddingVertical: 14,
     marginBottom: 12,
   },
@@ -587,12 +612,12 @@ const styles = StyleSheet.create({
   resumoNumero: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   resumoLabel: {
     fontSize: 12,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 2,
   },
 
@@ -607,13 +632,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
     marginBottom: 6,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#0D0D0D",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#2B2B2B",
   },
 
   alunoPresente: {
-    borderColor: "#d1d5db",
+    backgroundColor: "#12351F",
+    borderColor: "#2A6B43",
   },
 
   checkbox: {
@@ -621,19 +647,19 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: "#9ca3af",
+    borderColor: "#555555",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
   },
 
   checkboxMarcado: {
-    backgroundColor: "#111827",
-    borderColor: "#111827",
+    backgroundColor: "#C1121F",
+    borderColor: "#C1121F",
   },
 
   check: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",
   },
@@ -645,19 +671,23 @@ const styles = StyleSheet.create({
   nomeAluno: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   statusAluno: {
     fontSize: 12,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 2,
   },
 
+  statusAlunoPresente: {
+    color: "#75D89A",
+  },
+
   botaoSalvar: {
-    height: 50,
-    backgroundColor: "#111827",
-    borderRadius: 9,
+    height: 52,
+    backgroundColor: "#C1121F",
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 2,
@@ -668,21 +698,36 @@ const styles = StyleSheet.create({
   },
 
   textoBotaoSalvar: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "bold",
+  },
+
+  botaoCancelar: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 48,
+    marginTop: 4,
+  },
+
+  textoBotaoCancelar: {
+    color: "#888888",
+    fontSize: 15,
+    fontWeight: "600",
   },
 
   cardVazio: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 12,
     padding: 24,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#242424",
   },
 
   textoVazio: {
     textAlign: "center",
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 14,
     lineHeight: 20,
   },

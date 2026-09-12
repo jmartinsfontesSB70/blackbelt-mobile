@@ -131,16 +131,16 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#374151",
+    color: "#CCCCCC",
     marginTop: 14,
     marginBottom: 6,
   },
 
   input: {
     height: 48,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#0D0D0D",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#2B2B2B",
     borderRadius: 10,
     paddingHorizontal: 13,
     flexDirection: "row",
@@ -151,38 +151,40 @@ const styles = StyleSheet.create({
   valor: {
     flex: 1,
     fontSize: 15,
-    color: "#111827",
+    color: "#FFFFFF",
     marginRight: 10,
   },
 
   placeholder: {
-    color: "#9ca3af",
+    color: "#777777",
   },
 
   seta: {
     fontSize: 12,
-    color: "#6b7280",
+    color: "#888888",
   },
 
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.45)",
+    backgroundColor: "rgba(0, 0, 0, 0.70)",
     justifyContent: "center",
     padding: 20,
   },
 
   modal: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 18,
     maxHeight: "75%",
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#242424",
   },
 
   cabecalho: {
     minHeight: 60,
     paddingHorizontal: 18,
     borderBottomWidth: 1,
-    borderBottomColor: "#eeeeee",
+    borderBottomColor: "#242424",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -191,12 +193,12 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 19,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   fechar: {
     fontSize: 20,
-    color: "#6b7280",
+    color: "#888888",
     padding: 5,
   },
 
@@ -212,37 +214,37 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#0D0D0D",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#2B2B2B",
   },
 
   opcaoSelecionada: {
-    backgroundColor: "#111827",
-    borderColor: "#111827",
+    backgroundColor: "#C1121F",
+    borderColor: "#C1121F",
   },
 
   opcaoTexto: {
     flex: 1,
     fontSize: 15,
     fontWeight: "500",
-    color: "#374151",
+    color: "#CCCCCC",
   },
 
   opcaoTextoSelecionado: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontWeight: "600",
   },
 
   check: {
     fontSize: 18,
-    color: "#ffffff",
+    color: "#FFFFFF",
     marginLeft: 10,
   },
 
   semOpcoes: {
     textAlign: "center",
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 15,
     paddingVertical: 25,
   },
@@ -250,13 +252,13 @@ const styles = StyleSheet.create({
   botaoCancelar: {
     height: 48,
     borderTopWidth: 1,
-    borderTopColor: "#eeeeee",
+    borderTopColor: "#242424",
     alignItems: "center",
     justifyContent: "center",
   },
 
   botaoCancelarTexto: {
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 15,
     fontWeight: "600",
   },

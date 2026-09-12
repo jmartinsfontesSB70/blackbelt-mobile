@@ -126,7 +126,7 @@ export default function UsuarioDetalhesScreen() {
     return (
       <RotaPermissao permissao="USUARIO_LISTAR">
         <View style={styles.carregando}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator color="#C1121F" size="large" />
 
           <Text style={styles.carregandoTexto}>Carregando usuário...</Text>
         </View>
@@ -215,6 +215,14 @@ export default function UsuarioDetalhesScreen() {
             </View>
 
             <View style={styles.campo}>
+              <Text style={styles.label}>E-mail</Text>
+
+              <Text style={styles.valor}>
+                {usuario.email || "Não informado"}
+              </Text>
+            </View>
+
+            <View style={styles.campo}>
               <Text style={styles.label}>Perfil</Text>
 
               <Text style={styles.valor}>
@@ -273,7 +281,7 @@ export default function UsuarioDetalhesScreen() {
                   disabled={excluindo}
                 >
                   {excluindo ? (
-                    <ActivityIndicator />
+                    <ActivityIndicator color="#C1121F" />
                   ) : (
                     <Text style={styles.botaoExcluirTexto}>🗑️ Excluir</Text>
                   )}
@@ -292,7 +300,7 @@ export default function UsuarioDetalhesScreen() {
 const styles = StyleSheet.create({
   tela: {
     flex: 1,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   container: {
@@ -310,14 +318,14 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
   },
 
   avatarTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 28,
     fontWeight: "bold",
   },
@@ -329,7 +337,7 @@ const styles = StyleSheet.create({
   nome: {
     fontSize: 23,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
     marginBottom: 7,
   },
 
@@ -341,11 +349,11 @@ const styles = StyleSheet.create({
   },
 
   statusAtivo: {
-    backgroundColor: "#dcfce7",
+    backgroundColor: "#17351F",
   },
 
   statusInativo: {
-    backgroundColor: "#fee2e2",
+    backgroundColor: "#351719",
   },
 
   statusTexto: {
@@ -354,19 +362,19 @@ const styles = StyleSheet.create({
   },
 
   statusTextoAtivo: {
-    color: "#166534",
+    color: "#6EE7A0",
   },
 
   statusTextoInativo: {
-    color: "#991b1b",
+    color: "#F08A91",
   },
 
   avisoProtegido: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fef3c7",
+    backgroundColor: "#302814",
     borderWidth: 1,
-    borderColor: "#fcd34d",
+    borderColor: "#6B5518",
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
@@ -384,63 +392,57 @@ const styles = StyleSheet.create({
   avisoTitulo: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#92400e",
+    color: "#FCD34D",
     marginBottom: 3,
   },
 
   avisoTexto: {
     fontSize: 12,
-    color: "#92400e",
+    color: "#FCD34D",
     lineHeight: 17,
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    elevation: 2,
-    shadowColor: "#000000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: "#242424",
   },
 
   secao: {
     fontSize: 19,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
     marginBottom: 6,
   },
 
   campo: {
     borderBottomWidth: 1,
-    borderBottomColor: "#eeeeee",
+    borderBottomColor: "#242424",
     paddingVertical: 10,
   },
 
   label: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#6b7280",
+    color: "#888888",
     marginBottom: 4,
   },
 
   valor: {
     fontSize: 16,
-    color: "#111827",
+    color: "#CCCCCC",
   },
 
   valorAtivo: {
-    color: "#166534",
+    color: "#6EE7A0",
     fontWeight: "600",
   },
 
   valorInativo: {
-    color: "#991b1b",
+    color: "#F08A91",
     fontWeight: "600",
   },
 
@@ -453,13 +455,13 @@ const styles = StyleSheet.create({
   botaoEditar: {
     height: 50,
     borderRadius: 12,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     alignItems: "center",
     justifyContent: "center",
   },
 
   botaoEditarTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -467,15 +469,15 @@ const styles = StyleSheet.create({
   botaoExcluir: {
     height: 50,
     borderRadius: 12,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderWidth: 1,
-    borderColor: "#fecaca",
+    borderColor: "#7F1D1D",
     alignItems: "center",
     justifyContent: "center",
   },
 
   botaoExcluirTexto: {
-    color: "#b91c1c",
+    color: "#F08A91",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -488,12 +490,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   carregandoTexto: {
     marginTop: 12,
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 15,
   },
 
@@ -502,26 +504,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   erroTitulo: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 8,
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   erro: {
     fontSize: 16,
     textAlign: "center",
-    color: "#6b7280",
+    color: "#888888",
   },
 
   rodape: {
     textAlign: "center",
     marginTop: 8,
-    color: "#9ca3af",
+    color: "#555555",
     fontSize: 13,
   },
 });

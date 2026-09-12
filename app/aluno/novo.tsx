@@ -198,7 +198,7 @@ export default function NovoAlunoScreen() {
                 value={nome}
                 onChangeText={setNome}
                 placeholder="Digite o nome completo"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 autoCapitalize="words"
               />
 
@@ -211,7 +211,7 @@ export default function NovoAlunoScreen() {
                     value={cpf}
                     onChangeText={(texto) => setCpf(formatarCpf(texto))}
                     placeholder="000.000.000-00"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     keyboardType="numeric"
                   />
                 </View>
@@ -226,7 +226,7 @@ export default function NovoAlunoScreen() {
                       setDataNascimento(formatarData(texto))
                     }
                     placeholder="DD/MM/AAAA"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     keyboardType="numeric"
                     maxLength={10}
                   />
@@ -240,7 +240,7 @@ export default function NovoAlunoScreen() {
                 value={telefone}
                 onChangeText={(texto) => setTelefone(formatarTelefone(texto))}
                 placeholder="(00) 00000-0000"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 keyboardType="phone-pad"
               />
 
@@ -251,7 +251,7 @@ export default function NovoAlunoScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="email@exemplo.com"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -282,7 +282,7 @@ export default function NovoAlunoScreen() {
                 value={cep}
                 onChangeText={(texto) => setCep(formatarCep(texto))}
                 placeholder="00000-000"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 keyboardType="numeric"
               />
 
@@ -293,7 +293,7 @@ export default function NovoAlunoScreen() {
                 value={rua}
                 onChangeText={setRua}
                 placeholder="Nome da rua"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 autoCapitalize="words"
               />
 
@@ -306,7 +306,7 @@ export default function NovoAlunoScreen() {
                     value={numero}
                     onChangeText={setNumero}
                     placeholder="Número"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     keyboardType="numeric"
                   />
                 </View>
@@ -319,7 +319,7 @@ export default function NovoAlunoScreen() {
                     value={bairro}
                     onChangeText={setBairro}
                     placeholder="Bairro"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     autoCapitalize="words"
                   />
                 </View>
@@ -334,7 +334,7 @@ export default function NovoAlunoScreen() {
                     value={cidade}
                     onChangeText={setCidade}
                     placeholder="Cidade"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     autoCapitalize="words"
                   />
                 </View>
@@ -347,7 +347,7 @@ export default function NovoAlunoScreen() {
                     value={estado}
                     onChangeText={setEstado}
                     placeholder="BA"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     autoCapitalize="characters"
                     maxLength={2}
                   />
@@ -361,7 +361,7 @@ export default function NovoAlunoScreen() {
                 value={pontoReferencia}
                 onChangeText={setPontoReferencia}
                 placeholder="Ex.: próximo à academia..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 multiline
               />
             </View>
@@ -376,7 +376,7 @@ export default function NovoAlunoScreen() {
                 activeOpacity={0.8}
               >
                 {salvando ? (
-                  <ActivityIndicator color="#ffffff" />
+                  <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <Text style={styles.botaoTexto}>Cadastrar aluno</Text>
                 )}
@@ -401,11 +401,12 @@ export default function NovoAlunoScreen() {
 }
 
 /**
- * Valida uma data digitada no formato DD/MM/AAAA.
- *
- * Não usamos apenas new Date(), porque o JavaScript pode
- * normalizar datas inexistentes, como 31/02/2026.
- */
+
+* Valida uma data digitada no formato DD/MM/AAAA.
+*
+* Não usamos apenas new Date(), porque o JavaScript pode
+* normalizar datas inexistentes, como 31/02/2026.
+  */
 function validarData(data_digitada: string): boolean {
   const partes = data_digitada.split("/");
 
@@ -457,7 +458,7 @@ function validarData(data_digitada: string): boolean {
 const styles = StyleSheet.create({
   tela: {
     flex: 1,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   container: {
@@ -472,27 +473,29 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   subtitulo: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 5,
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 16,
     padding: 18,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#242424",
     elevation: 2,
     shadowColor: "#000000",
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
   },
 
@@ -506,7 +509,9 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#0D0D0D",
+    borderWidth: 1,
+    borderColor: "#2B2B2B",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -519,32 +524,32 @@ const styles = StyleSheet.create({
   secao: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   descricaoSecao: {
     fontSize: 12,
-    color: "#9ca3af",
+    color: "#888888",
     marginTop: 2,
   },
 
   label: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#374151",
+    color: "#CCCCCC",
     marginTop: 14,
     marginBottom: 6,
   },
 
   input: {
     height: 48,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#0D0D0D",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#2B2B2B",
     borderRadius: 10,
     paddingHorizontal: 13,
     fontSize: 15,
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   linha: {
@@ -584,7 +589,7 @@ const styles = StyleSheet.create({
 
   botao: {
     height: 52,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -596,7 +601,7 @@ const styles = StyleSheet.create({
   },
 
   botaoTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -609,7 +614,7 @@ const styles = StyleSheet.create({
   },
 
   botaoCancelarTexto: {
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 15,
     fontWeight: "600",
   },

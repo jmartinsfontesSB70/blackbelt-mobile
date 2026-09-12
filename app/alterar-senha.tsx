@@ -88,6 +88,7 @@ export default function AlterarSenhaScreen() {
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <Text style={styles.titulo}>Alterar senha</Text>
 
@@ -101,6 +102,7 @@ export default function AlterarSenhaScreen() {
             autoCapitalize="none"
             autoCorrect={false}
             editable={!salvando}
+            placeholderTextColor="#777777"
           />
 
           <Text style={styles.label}>Nova senha</Text>
@@ -113,6 +115,7 @@ export default function AlterarSenhaScreen() {
             autoCapitalize="none"
             autoCorrect={false}
             editable={!salvando}
+            placeholderTextColor="#777777"
           />
 
           <Text style={styles.label}>Digite a nova senha novamente</Text>
@@ -125,18 +128,29 @@ export default function AlterarSenhaScreen() {
             autoCapitalize="none"
             autoCorrect={false}
             editable={!salvando}
+            placeholderTextColor="#777777"
           />
 
           <TouchableOpacity
             style={[styles.botao, salvando && styles.botaoDesabilitado]}
             onPress={handleAlterarSenha}
             disabled={salvando}
+            activeOpacity={0.8}
           >
             {salvando ? (
-              <ActivityIndicator />
+              <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text style={styles.textoBotao}>Alterar senha</Text>
             )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.botaoCancelar}
+            onPress={() => router.back()}
+            disabled={salvando}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.textoBotaoCancelar}>Cancelar</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -147,39 +161,47 @@ export default function AlterarSenhaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#0A0A0A",
   },
 
   content: {
     padding: 24,
-    paddingBottom: 40,
+    paddingBottom: 80,
   },
 
   titulo: {
     fontSize: 24,
     fontWeight: "bold",
+    color: "#FFFFFF",
     marginBottom: 28,
   },
 
   label: {
     fontSize: 16,
     fontWeight: "600",
+    color: "#CCCCCC",
     marginBottom: 8,
   },
 
   input: {
+    height: 48,
+    backgroundColor: "#0D0D0D",
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    borderColor: "#2B2B2B",
+    borderRadius: 10,
+    paddingHorizontal: 13,
     fontSize: 16,
+    color: "#FFFFFF",
     marginBottom: 20,
   },
 
   botao: {
+    height: 52,
     marginTop: 10,
-    paddingVertical: 14,
-    borderRadius: 8,
+    backgroundColor: "#C1121F",
+    borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
   },
 
   botaoDesabilitado: {
@@ -189,5 +211,19 @@ const styles = StyleSheet.create({
   textoBotao: {
     fontSize: 16,
     fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+
+  botaoCancelar: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 48,
+    marginTop: 4,
+  },
+
+  textoBotaoCancelar: {
+    color: "#888888",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

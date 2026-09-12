@@ -37,23 +37,25 @@ export default function ProfessorCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 14,
     padding: 16,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#242424",
     elevation: 2,
   },
 
   nome: {
     fontSize: 17,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
     marginBottom: 6,
   },
 
   dado: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 2,
   },
 
@@ -68,12 +70,12 @@ const styles = StyleSheet.create({
   },
 
   statusAtivo: {
-    color: "#166534",
-    backgroundColor: "#dcfce7",
+    color: "#75D89A",
+    backgroundColor: "#12351F",
   },
 
   statusInativo: {
-    color: "#991b1b",
-    backgroundColor: "#fee2e2",
+    color: "#F08A91",
+    backgroundColor: "#3A171A",
   },
 });

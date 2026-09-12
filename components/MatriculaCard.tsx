@@ -60,17 +60,19 @@ export default function MatriculaCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 14,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#242424",
     elevation: 2,
     shadowColor: "#000000",
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
   },
 
@@ -84,19 +86,19 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
     marginRight: 10,
   },
 
   turmaNome: {
     fontSize: 14,
-    color: "#374151",
+    color: "#CCCCCC",
     marginTop: 10,
   },
 
   data: {
     fontSize: 13,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 7,
   },
 
@@ -104,14 +106,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 5,
     borderRadius: 8,
+    borderWidth: 1,
   },
 
   statusAtiva: {
-    backgroundColor: "#dcfce7",
+    backgroundColor: "#12351F",
+    borderColor: "#2A6B43",
   },
 
   statusInativa: {
-    backgroundColor: "#fee2e2",
+    backgroundColor: "#3A171A",
+    borderColor: "#5A2529",
   },
 
   statusTexto: {
@@ -120,10 +125,10 @@ const styles = StyleSheet.create({
   },
 
   statusTextoAtiva: {
-    color: "#166534",
+    color: "#75D89A",
   },
 
   statusTextoInativa: {
-    color: "#991b1b",
+    color: "#F08A91",
   },
 });

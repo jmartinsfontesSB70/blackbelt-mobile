@@ -116,7 +116,7 @@ export default function AlunosScreen() {
             onEndReachedThreshold={0.5}
             ListFooterComponent={
               carregando ? (
-                <ActivityIndicator style={styles.carregando} />
+                <ActivityIndicator style={styles.carregando} color="#C1121F" />
               ) : null
             }
             showsVerticalScrollIndicator={false}
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     paddingTop: 60,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   cabecalho: {
@@ -145,24 +145,24 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   botaoNovo: {
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 10,
   },
 
   botaoNovoTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "bold",
   },
 
   mensagem: {
-    color: "#b91c1c",
+    color: "#E04B55",
     fontSize: 15,
   },
 

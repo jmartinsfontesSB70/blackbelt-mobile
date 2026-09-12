@@ -84,6 +84,10 @@ export default function UsuariosScreen() {
                   <View style={styles.cardCabecalhoInfo}>
                     <Text style={styles.username}>{item.username}</Text>
 
+                    <Text style={styles.email}>
+                      {item.email || "E-mail não informado"}
+                    </Text>
+
                     <View
                       style={[
                         styles.status,
@@ -122,7 +126,7 @@ export default function UsuariosScreen() {
             }
             ListFooterComponent={
               carregando ? (
-                <ActivityIndicator style={styles.carregando} />
+                <ActivityIndicator color="#C1121F" style={styles.carregando} />
               ) : null
             }
             showsVerticalScrollIndicator={false}
@@ -138,7 +142,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     paddingTop: 60,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   cabecalho: {
@@ -151,35 +155,29 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   botaoNovo: {
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 10,
   },
 
   botaoNovoTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "bold",
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 16,
     padding: 18,
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: "#000000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: "#242424",
   },
 
   cardCabecalho: {
@@ -192,14 +190,14 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 14,
   },
 
   avatarTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 22,
     fontWeight: "bold",
   },
@@ -211,8 +209,14 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#111827",
-    marginBottom: 6,
+    color: "#FFFFFF",
+    marginBottom: 4,
+  },
+
+  email: {
+    fontSize: 13,
+    color: "#888888",
+    marginBottom: 8,
   },
 
   status: {
@@ -223,11 +227,11 @@ const styles = StyleSheet.create({
   },
 
   statusAtivo: {
-    backgroundColor: "#dcfce7",
+    backgroundColor: "#17351F",
   },
 
   statusInativo: {
-    backgroundColor: "#fee2e2",
+    backgroundColor: "#351719",
   },
 
   statusTexto: {
@@ -236,43 +240,43 @@ const styles = StyleSheet.create({
   },
 
   statusTextoAtivo: {
-    color: "#166534",
+    color: "#6EE7A0",
   },
 
   statusTextoInativo: {
-    color: "#991b1b",
+    color: "#F08A91",
   },
 
   dados: {
     borderTopWidth: 1,
-    borderTopColor: "#eeeeee",
+    borderTopColor: "#242424",
   },
 
   campo: {
     borderBottomWidth: 1,
-    borderBottomColor: "#eeeeee",
+    borderBottomColor: "#242424",
     paddingVertical: 10,
   },
 
   label: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#6b7280",
+    color: "#888888",
     marginBottom: 4,
   },
 
   valor: {
     fontSize: 15,
-    color: "#111827",
+    color: "#CCCCCC",
   },
 
   mensagem: {
-    color: "#b91c1c",
+    color: "#F08A91",
     fontSize: 15,
   },
 
   vazio: {
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 15,
     textAlign: "center",
     marginTop: 30,

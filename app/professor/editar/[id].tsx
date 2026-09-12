@@ -289,7 +289,7 @@ export default function EditarProfessorScreen() {
     return (
       <RotaPermissao permissao="PROFESSOR_EDITAR">
         <View style={styles.carregando}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color="#C1121F" />
 
           <Text style={styles.carregandoTexto}>Carregando professor...</Text>
         </View>
@@ -315,8 +315,6 @@ export default function EditarProfessorScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* Cabeçalho */}
-
             <View style={styles.cabecalho}>
               <Text style={styles.titulo}>Editar professor</Text>
 
@@ -324,8 +322,6 @@ export default function EditarProfessorScreen() {
                 Atualize os dados do professor
               </Text>
             </View>
-
-            {/* Dados profissionais */}
 
             <View style={styles.card}>
               <View style={styles.tituloSecao}>
@@ -349,7 +345,7 @@ export default function EditarProfessorScreen() {
                 value={nome}
                 onChangeText={setNome}
                 placeholder="Digite o nome completo"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 autoCapitalize="words"
               />
 
@@ -362,7 +358,7 @@ export default function EditarProfessorScreen() {
                     value={cpf}
                     onChangeText={(texto) => setCpf(formatarCpf(texto))}
                     placeholder="000.000.000-00"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     keyboardType="numeric"
                   />
                 </View>
@@ -377,7 +373,7 @@ export default function EditarProfessorScreen() {
                       setDataNascimento(formatarData(texto))
                     }
                     placeholder="DD/MM/AAAA"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     keyboardType="numeric"
                   />
                 </View>
@@ -390,7 +386,7 @@ export default function EditarProfessorScreen() {
                 value={telefone}
                 onChangeText={(texto) => setTelefone(formatarTelefone(texto))}
                 placeholder="(00) 00000-0000"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 keyboardType="phone-pad"
               />
 
@@ -401,7 +397,7 @@ export default function EditarProfessorScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="email@exemplo.com"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -418,7 +414,7 @@ export default function EditarProfessorScreen() {
                       setDataContratacao(formatarData(texto))
                     }
                     placeholder="DD/MM/AAAA"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     keyboardType="numeric"
                   />
                 </View>
@@ -431,7 +427,7 @@ export default function EditarProfessorScreen() {
                     value={valorHoraAula}
                     onChangeText={setValorHoraAula}
                     placeholder="0,00"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     keyboardType="decimal-pad"
                   />
                 </View>
@@ -473,8 +469,6 @@ export default function EditarProfessorScreen() {
               </View>
             </View>
 
-            {/* Endereço */}
-
             <View style={styles.card}>
               <View style={styles.tituloSecao}>
                 <View style={styles.iconeSecao}>
@@ -497,7 +491,7 @@ export default function EditarProfessorScreen() {
                 value={cep}
                 onChangeText={(texto) => setCep(formatarCep(texto))}
                 placeholder="00000-000"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 keyboardType="numeric"
               />
 
@@ -508,7 +502,7 @@ export default function EditarProfessorScreen() {
                 value={rua}
                 onChangeText={setRua}
                 placeholder="Nome da rua"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 autoCapitalize="words"
               />
 
@@ -521,7 +515,7 @@ export default function EditarProfessorScreen() {
                     value={numero}
                     onChangeText={setNumero}
                     placeholder="Número"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     keyboardType="numeric"
                   />
                 </View>
@@ -534,7 +528,7 @@ export default function EditarProfessorScreen() {
                     value={bairro}
                     onChangeText={setBairro}
                     placeholder="Bairro"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     autoCapitalize="words"
                   />
                 </View>
@@ -549,7 +543,7 @@ export default function EditarProfessorScreen() {
                     value={cidade}
                     onChangeText={setCidade}
                     placeholder="Cidade"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     autoCapitalize="words"
                   />
                 </View>
@@ -562,7 +556,7 @@ export default function EditarProfessorScreen() {
                     value={estado}
                     onChangeText={setEstado}
                     placeholder="BA"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor="#777777"
                     autoCapitalize="characters"
                     maxLength={2}
                   />
@@ -576,12 +570,10 @@ export default function EditarProfessorScreen() {
                 value={pontoReferencia}
                 onChangeText={setPontoReferencia}
                 placeholder="Ex.: próximo à academia..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 multiline
               />
             </View>
-
-            {/* Salvar */}
 
             <Permissao permissao="PROFESSOR_EDITAR" esconder>
               <TouchableOpacity
@@ -591,14 +583,12 @@ export default function EditarProfessorScreen() {
                 activeOpacity={0.8}
               >
                 {salvando ? (
-                  <ActivityIndicator color="#ffffff" />
+                  <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <Text style={styles.botaoTexto}>Salvar alterações</Text>
                 )}
               </TouchableOpacity>
             </Permissao>
-
-            {/* Cancelar */}
 
             <TouchableOpacity
               style={styles.botaoCancelar}
@@ -618,7 +608,7 @@ export default function EditarProfessorScreen() {
 const styles = StyleSheet.create({
   tela: {
     flex: 1,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   container: {
@@ -633,27 +623,29 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   subtitulo: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 5,
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 16,
     padding: 18,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#242424",
     elevation: 2,
     shadowColor: "#000000",
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
   },
 
@@ -667,7 +659,9 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#0D0D0D",
+    borderWidth: 1,
+    borderColor: "#2B2B2B",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -680,32 +674,32 @@ const styles = StyleSheet.create({
   secao: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   descricaoSecao: {
     fontSize: 12,
-    color: "#9ca3af",
+    color: "#888888",
     marginTop: 2,
   },
 
   label: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#374151",
+    color: "#CCCCCC",
     marginTop: 14,
     marginBottom: 6,
   },
 
   input: {
     height: 48,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#0D0D0D",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#2B2B2B",
     borderRadius: 10,
     paddingHorizontal: 13,
     fontSize: 15,
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   linha: {
@@ -754,39 +748,39 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#2B2B2B",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#0D0D0D",
   },
 
   botaoStatusAtivo: {
-    backgroundColor: "#dcfce7",
-    borderColor: "#86efac",
+    backgroundColor: "#12351F",
+    borderColor: "#2A6B43",
   },
 
   botaoStatusInativo: {
-    backgroundColor: "#fee2e2",
-    borderColor: "#fca5a5",
+    backgroundColor: "#3A171A",
+    borderColor: "#5A2529",
   },
 
   botaoStatusTexto: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#6b7280",
+    color: "#888888",
   },
 
   botaoStatusTextoAtivo: {
-    color: "#166534",
+    color: "#75D89A",
   },
 
   botaoStatusTextoInativo: {
-    color: "#991b1b",
+    color: "#F08A91",
   },
 
   botao: {
     height: 52,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -798,7 +792,7 @@ const styles = StyleSheet.create({
   },
 
   botaoTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -811,7 +805,7 @@ const styles = StyleSheet.create({
   },
 
   botaoCancelarTexto: {
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 15,
     fontWeight: "600",
   },
@@ -820,12 +814,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   carregandoTexto: {
     marginTop: 12,
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 15,
   },
 
@@ -834,19 +828,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   erroTitulo: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 8,
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   erro: {
     fontSize: 16,
     textAlign: "center",
-    color: "#6b7280",
+    color: "#E04B55",
   },
 });

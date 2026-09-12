@@ -86,7 +86,6 @@ export default function PerfisScreen() {
                 <Pressable
                   style={styles.card}
                   onPress={() => router.push(`/perfis/${item.id}`)}
-                  activeOpacity={0.75}
                 >
                   <View style={styles.cardCabecalho}>
                     <View style={styles.avatar}>
@@ -140,7 +139,11 @@ export default function PerfisScreen() {
             }
             ListFooterComponent={
               carregando ? (
-                <ActivityIndicator size="small" style={styles.carregando} />
+                <ActivityIndicator
+                  size="small"
+                  color="#C1121F"
+                  style={styles.carregando}
+                />
               ) : null
             }
             showsVerticalScrollIndicator={false}
@@ -157,7 +160,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 60,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   cabecalho: {
@@ -170,25 +173,25 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   subtitulo: {
     fontSize: 13,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 4,
   },
 
   botaoNovo: {
-    backgroundColor: "#111827",
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    borderRadius: 10,
+    backgroundColor: "#C1121F",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 8,
   },
 
   botaoNovoTexto: {
-    color: "#ffffff",
-    fontSize: 14,
+    color: "#FFFFFF",
+    fontSize: 12,
     fontWeight: "bold",
   },
 
@@ -197,7 +200,9 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
+    borderWidth: 1,
+    borderColor: "#242424",
     borderRadius: 16,
     padding: 18,
     marginBottom: 12,
@@ -209,7 +214,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
   },
 
@@ -222,14 +227,14 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 14,
   },
 
   avatarTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 22,
     fontWeight: "bold",
   },
@@ -241,25 +246,25 @@ const styles = StyleSheet.create({
   nome: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   identificacao: {
     fontSize: 13,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 4,
   },
 
   seta: {
     fontSize: 30,
     fontWeight: "300",
-    color: "#9ca3af",
+    color: "#777777",
     marginLeft: 8,
   },
 
   divisor: {
     height: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#2B2B2B",
     marginVertical: 14,
   },
 
@@ -271,7 +276,9 @@ const styles = StyleSheet.create({
   permissoesBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#0D0D0D",
+    borderWidth: 1,
+    borderColor: "#2B2B2B",
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -285,7 +292,7 @@ const styles = StyleSheet.create({
   permissoesTexto: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#4b5563",
+    color: "#CCCCCC",
   },
 
   carregando: {
@@ -293,7 +300,9 @@ const styles = StyleSheet.create({
   },
 
   erroContainer: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
+    borderWidth: 1,
+    borderColor: "#242424",
     borderRadius: 16,
     padding: 20,
     alignItems: "center",
@@ -302,12 +311,12 @@ const styles = StyleSheet.create({
   erroTitulo: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
     marginBottom: 6,
   },
 
   mensagem: {
-    color: "#b91c1c",
+    color: "#E04B55",
     fontSize: 15,
     textAlign: "center",
   },
@@ -326,12 +335,12 @@ const styles = StyleSheet.create({
   vazioTitulo: {
     fontSize: 17,
     fontWeight: "bold",
-    color: "#374151",
+    color: "#CCCCCC",
     marginBottom: 6,
   },
 
   vazio: {
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 14,
     textAlign: "center",
   },

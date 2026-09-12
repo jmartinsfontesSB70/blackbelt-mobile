@@ -122,7 +122,7 @@ export default function TurmasScreen() {
             onEndReachedThreshold={0.5}
             ListFooterComponent={
               carregando ? (
-                <ActivityIndicator style={styles.carregando} />
+                <ActivityIndicator style={styles.carregando} color="#C1121F" />
               ) : null
             }
             showsVerticalScrollIndicator={false}
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     paddingTop: 60,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   cabecalho: {
@@ -146,29 +146,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 20,
+    gap: 12,
   },
 
   titulo: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   botaoNovo: {
-    backgroundColor: "#111827",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
+    backgroundColor: "#C1121F",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 8,
   },
 
   botaoNovoTexto: {
-    color: "#ffffff",
-    fontSize: 14,
+    color: "#FFFFFF",
+    fontSize: 12,
     fontWeight: "bold",
   },
 
   mensagem: {
-    color: "#b91c1c",
+    color: "#E04B55",
     fontSize: 15,
   },
 

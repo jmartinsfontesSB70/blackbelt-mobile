@@ -24,6 +24,7 @@ export default function NovoUsuarioScreen() {
   const router = useRouter();
 
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [perfilId, setPerfilId] = useState("");
@@ -64,6 +65,11 @@ export default function NovoUsuarioScreen() {
       return;
     }
 
+    if (!email.trim()) {
+      Alert.alert("Atenção", "Informe o e-mail.");
+      return;
+    }
+
     if (!password) {
       Alert.alert("Atenção", "Informe a senha.");
       return;
@@ -84,6 +90,7 @@ export default function NovoUsuarioScreen() {
 
       await criarUsuario({
         username: username.trim(),
+        email: email.trim(),
         password,
         ativo,
         perfilId: Number(perfilId),
@@ -138,7 +145,7 @@ export default function NovoUsuarioScreen() {
                   <Text style={styles.iconeTexto}>👤</Text>
                 </View>
 
-                <View>
+                <View style={styles.tituloSecaoInfo}>
                   <Text style={styles.secao}>Dados do usuário</Text>
 
                   <Text style={styles.descricaoSecao}>
@@ -154,9 +161,25 @@ export default function NovoUsuarioScreen() {
                 value={username}
                 onChangeText={setUsername}
                 placeholder="Ex.: joao"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 autoCapitalize="none"
                 autoCorrect={false}
+                editable={!salvando}
+              />
+
+              <Text style={styles.label}>E-mail *</Text>
+
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Ex.: joao@email.com"
+                placeholderTextColor="#777777"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                autoComplete="email"
+                editable={!salvando}
               />
 
               <Text style={styles.label}>Senha *</Text>
@@ -166,15 +189,16 @@ export default function NovoUsuarioScreen() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Mínimo de 6 caracteres"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#777777"
                 secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
+                editable={!salvando}
               />
 
               {carregandoOpcoes ? (
                 <View style={styles.carregandoOpcoes}>
-                  <ActivityIndicator />
+                  <ActivityIndicator color="#C1121F" />
 
                   <Text style={styles.carregandoOpcoesTexto}>
                     Carregando perfis...
@@ -200,6 +224,7 @@ export default function NovoUsuarioScreen() {
                 <TouchableOpacity
                   style={[styles.botaoStatus, ativo && styles.botaoStatusAtivo]}
                   onPress={() => setAtivo(true)}
+                  disabled={salvando}
                 >
                   <Text
                     style={[
@@ -217,6 +242,7 @@ export default function NovoUsuarioScreen() {
                     !ativo && styles.botaoStatusInativo,
                   ]}
                   onPress={() => setAtivo(false)}
+                  disabled={salvando}
                 >
                   <Text
                     style={[
@@ -241,7 +267,7 @@ export default function NovoUsuarioScreen() {
                 activeOpacity={0.8}
               >
                 {salvando ? (
-                  <ActivityIndicator color="#ffffff" />
+                  <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <Text style={styles.botaoTexto}>Cadastrar usuário</Text>
                 )}
@@ -266,7 +292,7 @@ export default function NovoUsuarioScreen() {
 const styles = StyleSheet.create({
   tela: {
     flex: 1,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: "#0A0A0A",
   },
 
   container: {
@@ -281,28 +307,22 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   subtitulo: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#888888",
     marginTop: 5,
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#151515",
     borderRadius: 16,
     padding: 18,
     marginBottom: 16,
-    elevation: 2,
-    shadowColor: "#000000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: "#242424",
   },
 
   tituloSecao: {
@@ -315,7 +335,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#242424",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -325,35 +345,39 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
 
+  tituloSecaoInfo: {
+    flex: 1,
+  },
+
   secao: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   descricaoSecao: {
     fontSize: 12,
-    color: "#9ca3af",
+    color: "#777777",
     marginTop: 2,
   },
 
   label: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#374151",
+    color: "#CCCCCC",
     marginTop: 14,
     marginBottom: 6,
   },
 
   input: {
     height: 48,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#0D0D0D",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#2B2B2B",
     borderRadius: 10,
     paddingHorizontal: 13,
     fontSize: 15,
-    color: "#111827",
+    color: "#FFFFFF",
   },
 
   linhaStatus: {
@@ -367,34 +391,34 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#2B2B2B",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#0D0D0D",
   },
 
   botaoStatusAtivo: {
-    backgroundColor: "#dcfce7",
-    borderColor: "#86efac",
+    backgroundColor: "#17351F",
+    borderColor: "#2D6A3D",
   },
 
   botaoStatusInativo: {
-    backgroundColor: "#fee2e2",
-    borderColor: "#fca5a5",
+    backgroundColor: "#351719",
+    borderColor: "#7F1D1D",
   },
 
   botaoStatusTexto: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#6b7280",
+    color: "#777777",
   },
 
   botaoStatusTextoAtivo: {
-    color: "#166534",
+    color: "#6EE7A0",
   },
 
   botaoStatusTextoInativo: {
-    color: "#991b1b",
+    color: "#F08A91",
   },
 
   carregandoOpcoes: {
@@ -406,13 +430,13 @@ const styles = StyleSheet.create({
 
   carregandoOpcoesTexto: {
     marginTop: 8,
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 13,
   },
 
   botao: {
     height: 52,
-    backgroundColor: "#111827",
+    backgroundColor: "#C1121F",
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -424,7 +448,7 @@ const styles = StyleSheet.create({
   },
 
   botaoTexto: {
-    color: "#ffffff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -437,7 +461,7 @@ const styles = StyleSheet.create({
   },
 
   botaoCancelarTexto: {
-    color: "#6b7280",
+    color: "#888888",
     fontSize: 15,
     fontWeight: "600",
   },
