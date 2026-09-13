@@ -1,7 +1,21 @@
 import { apiFetch } from "./api";
 
-export async function listarModalidades(page: number, size: number) {
-  return await apiFetch(`/modalidades?page=${page}&size=${size}`);
+export async function listarModalidades(
+  page: number,
+  size: number,
+  pesquisa: string = "",
+  sort: string = "id",
+  direction: string = "desc",
+) {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    pesquisa,
+    sort,
+    direction,
+  });
+
+  return await apiFetch(`/modalidades?${params.toString()}`);
 }
 
 export async function criarModalidade(modalidade: any) {

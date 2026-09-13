@@ -1,7 +1,21 @@
 import { apiFetch } from "./api";
 
-export async function listarPresencas(page: number, size: number) {
-  return await apiFetch(`/presencas?page=${page}&size=${size}`);
+export async function listarPresencas(
+  page: number,
+  size: number,
+  pesquisa: string = "",
+  sort: string = "data",
+  direction: string = "desc",
+) {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    pesquisa,
+    sort,
+    direction,
+  });
+
+  return await apiFetch(`/presencas?${params.toString()}`);
 }
 
 export async function criarPresenca(presenca: any) {

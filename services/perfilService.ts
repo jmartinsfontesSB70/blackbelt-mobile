@@ -1,7 +1,28 @@
 import { apiFetch } from "./api";
 
-export async function listarPerfis() {
-  return await apiFetch("/perfis");
+export async function listarPerfis(
+  page: number,
+  size: number,
+  sort: string = "nome",
+  direction: string = "asc",
+) {
+  return await apiFetch(
+    `/perfis?page=${page}&size=${size}&sort=${sort}&direction=${direction}`,
+  );
+}
+
+export async function listarPerfisParaSelecao() {
+  const primeiraPagina = await listarPerfis(0, 10);
+
+  const perfis = [...primeiraPagina.content];
+
+  for (let pagina = 1; pagina < primeiraPagina.totalPages; pagina++) {
+    const dadosPagina = await listarPerfis(pagina, 10);
+
+    perfis.push(...dadosPagina.content);
+  }
+
+  return perfis;
 }
 
 export async function criarPerfil(perfil: any) {

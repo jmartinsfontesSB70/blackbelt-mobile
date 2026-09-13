@@ -22,14 +22,22 @@ export default function PerfisScreen() {
   const [mensagem, setMensagem] = useState("");
   const [carregando, setCarregando] = useState(false);
 
-  const carregarPerfis = useCallback(async () => {
+  const [paginaAtual, setPaginaAtual] = useState(0);
+  const [temMaisPaginas, setTemMaisPaginas] = useState(true);
+
+  const [sort, setSort] = useState("nome");
+  const [direction, setDirection] = useState("desc");
+
+  const carregarPrimeiraPagina = useCallback(async () => {
     try {
       setCarregando(true);
       setMensagem("");
 
-      const resposta = await listarPerfis();
+      const resposta = await listarPerfis(0, 10, sort, direction);
 
-      setPerfis(resposta);
+      setPerfis(resposta.content);
+      setPaginaAtual(0);
+      setTemMaisPaginas(!resposta.last);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
@@ -39,12 +47,53 @@ export default function PerfisScreen() {
     } finally {
       setCarregando(false);
     }
-  }, []);
+  }, [sort, direction]);
+
+  const carregarProximaPagina = useCallback(async () => {
+    if (carregando || !temMaisPaginas) {
+      return;
+    }
+
+    try {
+      setCarregando(true);
+
+      const proximaPagina = paginaAtual + 1;
+
+      const resposta = await listarPerfisPaginado(
+        proximaPagina,
+        10,
+        sort,
+        direction,
+      );
+
+      setPerfis((perfisAtuais) => [...perfisAtuais, ...resposta.content]);
+
+      setPaginaAtual(proximaPagina);
+      setTemMaisPaginas(!resposta.last);
+    } catch (error) {
+      if (error instanceof Error) {
+        setMensagem(error.message);
+      } else {
+        setMensagem("Erro ao carregar perfis.");
+      }
+    } finally {
+      setCarregando(false);
+    }
+  }, [carregando, temMaisPaginas, paginaAtual, sort, direction]);
+
+  function ordenarPor(campo: string) {
+    if (sort === campo) {
+      setDirection((valorAtual) => (valorAtual === "asc" ? "desc" : "asc"));
+    } else {
+      setSort(campo);
+      setDirection("asc");
+    }
+  }
 
   useFocusEffect(
     useCallback(() => {
-      carregarPerfis();
-    }, [carregarPerfis]),
+      carregarPrimeiraPagina();
+    }, [carregarPrimeiraPagina]),
   );
 
   return (
@@ -67,6 +116,25 @@ export default function PerfisScreen() {
               <Text style={styles.botaoNovoTexto}>+ Novo</Text>
             </Pressable>
           </Permissao>
+        </View>
+
+        <View style={styles.ordenacao}>
+          <Pressable
+            style={[
+              styles.botaoOrdenacao,
+              sort === "nome" && styles.botaoOrdenacaoAtivo,
+            ]}
+            onPress={() => ordenarPor("nome")}
+          >
+            <Text
+              style={[
+                styles.botaoOrdenacaoTexto,
+                sort === "nome" && styles.botaoOrdenacaoTextoAtivo,
+              ]}
+            >
+              Nome {sort === "nome" ? (direction === "asc" ? "↑" : "↓") : ""}
+            </Text>
+          </Pressable>
         </View>
 
         {mensagem ? (
@@ -122,6 +190,8 @@ export default function PerfisScreen() {
                 </Pressable>
               );
             }}
+            onEndReached={carregarProximaPagina}
+            onEndReachedThreshold={0.5}
             ListEmptyComponent={
               !carregando ? (
                 <View style={styles.vazioContainer}>
@@ -167,7 +237,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 22,
+    marginBottom: 16,
   },
 
   titulo: {
@@ -195,6 +265,35 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  ordenacao: {
+    flexDirection: "row",
+    marginBottom: 16,
+  },
+
+  botaoOrdenacao: {
+    backgroundColor: "#151515",
+    borderWidth: 1,
+    borderColor: "#242424",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+
+  botaoOrdenacaoAtivo: {
+    backgroundColor: "#2A1012",
+    borderColor: "#C1121F",
+  },
+
+  botaoOrdenacaoTexto: {
+    color: "#888888",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  botaoOrdenacaoTextoAtivo: {
+    color: "#FFFFFF",
+  },
+
   lista: {
     paddingBottom: 30,
   },
@@ -206,9 +305,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     marginBottom: 12,
-
     elevation: 2,
-
     shadowColor: "#000000",
     shadowOffset: {
       width: 0,

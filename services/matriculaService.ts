@@ -1,7 +1,21 @@
 import { apiFetch } from "./api";
 
-export async function listarMatriculas(page: number, size: number) {
-  return await apiFetch(`/matriculas?page=${page}&size=${size}`);
+export async function listarMatriculas(
+  page: number,
+  size: number,
+  pesquisa: string = "",
+  sort: string = "dataMatricula",
+  direction: string = "desc",
+) {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    pesquisa,
+    sort,
+    direction,
+  });
+
+  return await apiFetch(`/matriculas?${params.toString()}`);
 }
 
 export async function criarMatricula(matricula: any) {

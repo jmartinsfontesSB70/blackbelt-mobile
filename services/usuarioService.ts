@@ -1,7 +1,21 @@
 import { apiFetch } from "./api";
 
-export async function listarUsuarios() {
-  return await apiFetch("/usuarios");
+export async function listarUsuarios(
+  page: number,
+  size: number,
+  pesquisa: string = "",
+  sort: string = "id",
+  direction: string = "desc",
+) {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    pesquisa,
+    sort,
+    direction,
+  });
+
+  return await apiFetch(`/usuarios?${params.toString()}`);
 }
 
 export async function criarUsuario(usuario: any) {

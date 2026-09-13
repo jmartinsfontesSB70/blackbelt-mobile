@@ -1,7 +1,21 @@
 import { apiFetch } from "./api";
 
-export async function listarProfessores(page: number, size: number) {
-  return await apiFetch(`/professores?page=${page}&size=${size}`);
+export async function listarProfessores(
+  page: number,
+  size: number,
+  pesquisa: string = "",
+  sort: string = "id",
+  direction: string = "desc",
+) {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    pesquisa,
+    sort,
+    direction,
+  });
+
+  return await apiFetch(`/professores?${params.toString()}`);
 }
 
 export async function criarProfessor(professor: any) {

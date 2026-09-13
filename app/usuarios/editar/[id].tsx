@@ -17,7 +17,8 @@ import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
 import SelectInput from "@/components/SelectInput";
 
-import { listarPerfis } from "@/services/perfilService";
+import { listarPerfisParaSelecao } from "@/services/perfilService";
+
 import { atualizarUsuario, buscarUsuario } from "@/services/usuarioService";
 
 export default function EditarUsuarioScreen() {
@@ -51,7 +52,7 @@ export default function EditarUsuarioScreen() {
 
       const [usuario, perfisResposta] = await Promise.all([
         buscarUsuario(id),
-        listarPerfis(),
+        listarPerfisParaSelecao(),
       ]);
 
       setUsername(usuario.username ?? "");

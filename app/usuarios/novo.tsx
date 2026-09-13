@@ -17,7 +17,7 @@ import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
 import SelectInput from "@/components/SelectInput";
 
-import { listarPerfis } from "@/services/perfilService";
+import { listarPerfisParaSelecao } from "@/services/perfilService";
 import { criarUsuario } from "@/services/usuarioService";
 
 export default function NovoUsuarioScreen() {
@@ -45,7 +45,7 @@ export default function NovoUsuarioScreen() {
     try {
       setCarregandoOpcoes(true);
 
-      const perfisResposta = await listarPerfis();
+      const perfisResposta = await listarPerfisParaSelecao();
 
       setPerfis(perfisResposta);
     } catch (error) {

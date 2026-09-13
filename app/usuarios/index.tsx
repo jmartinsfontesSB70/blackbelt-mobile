@@ -7,6 +7,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
@@ -22,14 +23,25 @@ export default function UsuariosScreen() {
   const [mensagem, setMensagem] = useState("");
   const [carregando, setCarregando] = useState(false);
 
-  const carregarUsuarios = useCallback(async () => {
+  const [paginaAtual, setPaginaAtual] = useState(0);
+  const [temMaisPaginas, setTemMaisPaginas] = useState(true);
+
+  const [textoPesquisa, setTextoPesquisa] = useState("");
+  const [pesquisa, setPesquisa] = useState("");
+
+  const [sort, setSort] = useState("id");
+  const [direction, setDirection] = useState("desc");
+
+  const carregarPrimeiraPagina = useCallback(async () => {
     try {
       setCarregando(true);
       setMensagem("");
 
-      const resposta = await listarUsuarios();
+      const resposta = await listarUsuarios(0, 10, pesquisa, sort, direction);
 
-      setUsuarios(resposta);
+      setUsuarios(resposta.content);
+      setPaginaAtual(0);
+      setTemMaisPaginas(!resposta.last);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
@@ -39,12 +51,58 @@ export default function UsuariosScreen() {
     } finally {
       setCarregando(false);
     }
-  }, []);
+  }, [pesquisa, sort, direction]);
+
+  const carregarProximaPagina = useCallback(async () => {
+    if (carregando || !temMaisPaginas) {
+      return;
+    }
+
+    try {
+      setCarregando(true);
+
+      const proximaPagina = paginaAtual + 1;
+
+      const resposta = await listarUsuarios(
+        proximaPagina,
+        10,
+        pesquisa,
+        sort,
+        direction,
+      );
+
+      setUsuarios((usuariosAtuais) => [...usuariosAtuais, ...resposta.content]);
+
+      setPaginaAtual(proximaPagina);
+      setTemMaisPaginas(!resposta.last);
+    } catch (error) {
+      if (error instanceof Error) {
+        setMensagem(error.message);
+      } else {
+        setMensagem("Erro ao carregar usuários.");
+      }
+    } finally {
+      setCarregando(false);
+    }
+  }, [carregando, temMaisPaginas, paginaAtual, pesquisa, sort, direction]);
+
+  function executarPesquisa() {
+    setPesquisa(textoPesquisa.trim());
+  }
+
+  function ordenarPor(campo: string) {
+    if (sort === campo) {
+      setDirection((valorAtual) => (valorAtual === "asc" ? "desc" : "asc"));
+    } else {
+      setSort(campo);
+      setDirection("asc");
+    }
+  }
 
   useFocusEffect(
     useCallback(() => {
-      carregarUsuarios();
-    }, [carregarUsuarios]),
+      carregarPrimeiraPagina();
+    }, [carregarPrimeiraPagina]),
   );
 
   return (
@@ -61,6 +119,76 @@ export default function UsuariosScreen() {
               <Text style={styles.botaoNovoTexto}>+ Novo usuário</Text>
             </Pressable>
           </Permissao>
+        </View>
+
+        <View style={styles.pesquisaContainer}>
+          <TextInput
+            style={styles.inputPesquisa}
+            placeholder="Pesquisar usuário, e-mail ou perfil..."
+            placeholderTextColor="#888888"
+            value={textoPesquisa}
+            onChangeText={setTextoPesquisa}
+            onSubmitEditing={executarPesquisa}
+            returnKeyType="search"
+          />
+
+          <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
+            <Text style={styles.botaoPesquisaTexto}>🔎</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.ordenacao}>
+          <Pressable
+            style={[
+              styles.botaoOrdenacao,
+              sort === "username" && styles.botaoOrdenacaoAtivo,
+            ]}
+            onPress={() => ordenarPor("username")}
+          >
+            <Text
+              style={[
+                styles.botaoOrdenacaoTexto,
+                sort === "username" && styles.botaoOrdenacaoTextoAtivo,
+              ]}
+            >
+              Usuário{" "}
+              {sort === "username" ? (direction === "asc" ? "↑" : "↓") : ""}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.botaoOrdenacao,
+              sort === "email" && styles.botaoOrdenacaoAtivo,
+            ]}
+            onPress={() => ordenarPor("email")}
+          >
+            <Text
+              style={[
+                styles.botaoOrdenacaoTexto,
+                sort === "email" && styles.botaoOrdenacaoTextoAtivo,
+              ]}
+            >
+              E-mail {sort === "email" ? (direction === "asc" ? "↑" : "↓") : ""}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.botaoOrdenacao,
+              sort === "id" && styles.botaoOrdenacaoAtivo,
+            ]}
+            onPress={() => ordenarPor("id")}
+          >
+            <Text
+              style={[
+                styles.botaoOrdenacaoTexto,
+                sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+              ]}
+            >
+              ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
+            </Text>
+          </Pressable>
         </View>
 
         {mensagem ? (
@@ -119,6 +247,8 @@ export default function UsuariosScreen() {
                 </View>
               </Pressable>
             )}
+            onEndReached={carregarProximaPagina}
+            onEndReachedThreshold={0.5}
             ListEmptyComponent={
               !carregando ? (
                 <Text style={styles.vazio}>Nenhum usuário encontrado.</Text>
@@ -149,7 +279,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 16,
   },
 
   titulo: {
@@ -169,6 +299,68 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "bold",
+  },
+
+  pesquisaContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  inputPesquisa: {
+    flex: 1,
+    height: 46,
+    backgroundColor: "#151515",
+    borderWidth: 1,
+    borderColor: "#242424",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    color: "#FFFFFF",
+    fontSize: 15,
+  },
+
+  botaoPesquisa: {
+    width: 46,
+    height: 46,
+    marginLeft: 8,
+    borderRadius: 10,
+    backgroundColor: "#C1121F",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  botaoPesquisaTexto: {
+    fontSize: 20,
+  },
+
+  ordenacao: {
+    flexDirection: "row",
+    marginBottom: 16,
+    gap: 8,
+  },
+
+  botaoOrdenacao: {
+    backgroundColor: "#151515",
+    borderWidth: 1,
+    borderColor: "#242424",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+
+  botaoOrdenacaoAtivo: {
+    backgroundColor: "#2A1012",
+    borderColor: "#C1121F",
+  },
+
+  botaoOrdenacaoTexto: {
+    color: "#888888",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  botaoOrdenacaoTextoAtivo: {
+    color: "#FFFFFF",
   },
 
   card: {
