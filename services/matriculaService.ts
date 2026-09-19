@@ -62,3 +62,7 @@ export async function listarMatriculasAtivasPorTurma(
 ) {
   return await apiFetch(`/matriculas/turma/${turmaId}/ativas?data=${data}`);
 }
+
+export async function listarMatriculasAtivasPorAluno(alunoId: number) {
+  return await apiFetch(`/matriculas/aluno/${alunoId}/ativas`);
+}

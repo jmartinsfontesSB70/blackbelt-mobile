@@ -21,6 +21,15 @@ import { listarModalidadesParaSelecao } from "@/services/modalidadeService";
 import { listarProfessoresParaSelecao } from "@/services/professorService";
 import { criarTurma } from "@/services/turmaService";
 
+const diasDisponiveis = [
+  { valor: "SEGUNDA", nome: "Segunda-feira" },
+  { valor: "TERCA", nome: "Terça-feira" },
+  { valor: "QUARTA", nome: "Quarta-feira" },
+  { valor: "QUINTA", nome: "Quinta-feira" },
+  { valor: "SEXTA", nome: "Sexta-feira" },
+  { valor: "SABADO", nome: "Sábado" },
+];
+
 export default function NovoTurmaScreen() {
   const router = useRouter();
 
@@ -32,7 +41,8 @@ export default function NovoTurmaScreen() {
   const [professorId, setProfessorId] = useState("");
   const [professorNome, setProfessorNome] = useState("");
 
-  const [diasSemana, setDiasSemana] = useState("");
+  const [diasSemana, setDiasSemana] = useState<string[]>([]);
+
   const [horarioInicio, setHorarioInicio] = useState("");
   const [horarioFim, setHorarioFim] = useState("");
   const [capacidade, setCapacidade] = useState("");
@@ -74,6 +84,16 @@ export default function NovoTurmaScreen() {
     }
   }
 
+  function alternarDia(dia: string) {
+    setDiasSemana((diasAtuais) => {
+      if (diasAtuais.includes(dia)) {
+        return diasAtuais.filter((item) => item !== dia);
+      }
+
+      return [...diasAtuais, dia];
+    });
+  }
+
   function formatarHorario(texto: string) {
     const somenteNumeros = texto.replace(/\D/g, "").slice(0, 4);
 
@@ -113,8 +133,8 @@ export default function NovoTurmaScreen() {
       return;
     }
 
-    if (!diasSemana.trim()) {
-      Alert.alert("Atenção", "Informe os dias da semana.");
+    if (diasSemana.length === 0) {
+      Alert.alert("Atenção", "Selecione pelo menos um dia da semana.");
       return;
     }
 
@@ -171,7 +191,7 @@ export default function NovoTurmaScreen() {
         nome: nome.trim(),
         modalidadeId: Number(modalidadeId),
         professorId: Number(professorId),
-        diasSemana: diasSemana.trim(),
+        diasSemana,
         horarioInicio,
         horarioFim,
         capacidade: capacidadeNumerica,
@@ -285,14 +305,36 @@ export default function NovoTurmaScreen() {
 
               <Text style={styles.label}>Dias da semana *</Text>
 
-              <TextInput
-                style={styles.input}
-                value={diasSemana}
-                onChangeText={setDiasSemana}
-                placeholder="Ex.: SEG, QUA e SEX"
-                placeholderTextColor="#777777"
-                autoCapitalize="characters"
-              />
+              <View style={styles.listaDias}>
+                {diasDisponiveis.map((dia, index) => {
+                  const selecionado = diasSemana.includes(dia.valor);
+
+                  return (
+                    <TouchableOpacity
+                      key={dia.valor}
+                      style={[
+                        styles.diaItem,
+                        index === 0 && styles.diaItemPrimeiro,
+                        index === diasDisponiveis.length - 1 &&
+                          styles.diaItemUltimo,
+                      ]}
+                      onPress={() => alternarDia(dia.valor)}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.diaTexto,
+                          selecionado && styles.diaTextoSelecionado,
+                        ]}
+                      >
+                        {dia.nome}
+                      </Text>
+
+                      {selecionado && <Text style={styles.diaCheck}>✓</Text>}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
 
               <View style={styles.linha}>
                 <View style={styles.campoMaior}>
@@ -503,6 +545,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
     fontSize: 15,
     color: "#FFFFFF",
+  },
+
+  listaDias: {
+    backgroundColor: "#0D0D0D",
+    borderWidth: 1,
+    borderColor: "#2B2B2B",
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+
+  diaItem: {
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 14,
+    borderTopWidth: 1,
+    borderTopColor: "#2B2B2B",
+  },
+
+  diaItemPrimeiro: {
+    borderTopWidth: 0,
+  },
+
+  diaItemUltimo: {
+    minHeight: 49,
+  },
+
+  diaTexto: {
+    color: "#CCCCCC",
+    fontSize: 15,
+  },
+
+  diaTextoSelecionado: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },
+
+  diaCheck: {
+    color: "#C1121F",
+    fontSize: 22,
+    fontWeight: "bold",
   },
 
   linha: {

@@ -51,6 +51,23 @@ export default function TurmaDetalhesScreen() {
     return horario.substring(0, 5);
   }
 
+  function formatarDiasSemana(dias?: string[]) {
+    if (!Array.isArray(dias) || dias.length === 0) {
+      return "Não informado";
+    }
+
+    const nomes: Record<string, string> = {
+      SEGUNDA: "Segunda",
+      TERCA: "Terça",
+      QUARTA: "Quarta",
+      QUINTA: "Quinta",
+      SEXTA: "Sexta",
+      SABADO: "Sábado",
+    };
+
+    return dias.map((dia) => nomes[dia] ?? dia).join(", ");
+  }
+
   function confirmarExclusao() {
     Alert.alert("Excluir turma", `Deseja realmente excluir ${turma.nome}?`, [
       {
@@ -183,7 +200,7 @@ export default function TurmaDetalhesScreen() {
               <Text style={styles.label}>Dias da semana</Text>
 
               <Text style={styles.valor}>
-                {turma.diasSemana || "Não informado"}
+                {formatarDiasSemana(turma.diasSemana)}
               </Text>
             </View>
           </View>

@@ -4,7 +4,7 @@ type TurmaCardProps = {
   nome: string;
   modalidadeNome: string;
   professorNome: string;
-  diasSemana: string;
+  diasSemana: string[];
   horarioInicio: string;
   horarioFim: string;
   capacidade: number;
@@ -35,7 +35,7 @@ export default function TurmaCard({
         Professor: {professorNome || "Não informado"}
       </Text>
 
-      <Text style={styles.dado}>Dias: {diasSemana || "Não informado"}</Text>
+      <Text style={styles.dado}>Dias: {formatarDiasSemana(diasSemana)}</Text>
 
       <Text style={styles.dado}>
         Horário: {formatarHorario(horarioInicio)} -{" "}
@@ -54,6 +54,23 @@ export default function TurmaCard({
       </Text>
     </Pressable>
   );
+}
+
+function formatarDiasSemana(dias?: string[]) {
+  if (!Array.isArray(dias) || dias.length === 0) {
+    return "Não informado";
+  }
+
+  const nomes: Record<string, string> = {
+    SEGUNDA: "Segunda",
+    TERCA: "Terça",
+    QUARTA: "Quarta",
+    QUINTA: "Quinta",
+    SEXTA: "Sexta",
+    SABADO: "Sábado",
+  };
+
+  return dias.map((dia) => nomes[dia] ?? dia).join(", ");
 }
 
 function formatarHorario(horario: string) {

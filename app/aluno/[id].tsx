@@ -276,6 +276,17 @@ export default function AlunoDetalhesScreen() {
           {/* Ações */}
 
           <View style={styles.acoes}>
+            <Permissao permissao="ALUNO_LISTAR" esconder>
+              <Pressable
+                style={styles.botaoHistoricoGraduacao}
+                onPress={() => router.push(`/aluno/${id}/historico-graduacao`)}
+              >
+                <Text style={styles.botaoHistoricoGraduacaoTexto}>
+                  📜 Histórico de Graduação
+                </Text>
+              </Pressable>
+            </Permissao>
+
             <Permissao permissao="ALUNO_EDITAR" esconder>
               <Pressable
                 style={styles.botaoEditar}
@@ -537,5 +548,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: "#666666",
     fontSize: 13,
+  },
+
+  botaoHistoricoGraduacao: {
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: "#151515",
+    borderWidth: 1,
+    borderColor: "#333333",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  botaoHistoricoGraduacaoTexto: {
+    color: "#C1121F",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

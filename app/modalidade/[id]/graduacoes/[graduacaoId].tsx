@@ -1,5 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+
 import { useEffect, useState } from "react";
+
 import {
   ActivityIndicator,
   Alert,
@@ -14,42 +16,46 @@ import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
 
 import {
-  buscarModalidade,
-  excluirModalidade,
-} from "@/services/modalidadeService";
+  buscarGraduacaoPorId,
+  excluirGraduacao,
+} from "@/services/graduacaoService";
 
-export default function ModalidadeDetalhesScreen() {
+export default function GraduacaoDetalhesScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [modalidade, setModalidade] = useState<any>(null);
+  const { id, graduacaoId } = useLocalSearchParams<{
+    id: string;
+    graduacaoId: string;
+  }>();
+
+  const [graduacao, setGraduacao] = useState<any>(null);
   const [mensagem, setMensagem] = useState("");
   const [excluindo, setExcluindo] = useState(false);
 
   useEffect(() => {
-    carregarModalidade();
-  }, [id]);
+    carregarGraduacao();
+  }, [graduacaoId]);
 
-  async function carregarModalidade() {
+  async function carregarGraduacao() {
     try {
       setMensagem("");
 
-      const resposta = await buscarModalidade(id);
+      const resposta = await buscarGraduacaoPorId(graduacaoId);
 
-      setModalidade(resposta);
+      setGraduacao(resposta);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
       } else {
-        setMensagem("Erro ao carregar modalidade.");
+        setMensagem("Erro ao carregar graduação.");
       }
     }
   }
 
   function confirmarExclusao() {
     Alert.alert(
-      "Excluir modalidade",
-      `Deseja realmente excluir ${modalidade.nome}?`,
+      "Excluir graduação",
+      `Deseja realmente excluir ${graduacao.nome}?`,
       [
         {
           text: "Cancelar",
@@ -68,19 +74,19 @@ export default function ModalidadeDetalhesScreen() {
     try {
       setExcluindo(true);
 
-      await excluirModalidade(Number(id));
+      await excluirGraduacao(Number(graduacaoId));
 
-      Alert.alert("Sucesso", "Modalidade excluída com sucesso!", [
+      Alert.alert("Sucesso", "Graduação excluída com sucesso!", [
         {
           text: "OK",
-          onPress: () => router.dismissTo("/modalidades"),
+          onPress: () => router.dismissTo(`/modalidade/${id}/graduacoes`),
         },
       ]);
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert("Não foi possível excluir", error.message);
       } else {
-        Alert.alert("Erro", "Não foi possível excluir a modalidade.");
+        Alert.alert("Erro", "Não foi possível excluir a graduação.");
       }
     } finally {
       setExcluindo(false);
@@ -99,13 +105,13 @@ export default function ModalidadeDetalhesScreen() {
     );
   }
 
-  if (!modalidade) {
+  if (!graduacao) {
     return (
       <RotaPermissao permissao="MODALIDADE_LISTAR">
         <View style={styles.carregando}>
           <ActivityIndicator size="large" />
 
-          <Text style={styles.carregandoTexto}>Carregando modalidade...</Text>
+          <Text style={styles.carregandoTexto}>Carregando graduação...</Text>
         </View>
       </RotaPermissao>
     );
@@ -116,7 +122,7 @@ export default function ModalidadeDetalhesScreen() {
       <>
         <Stack.Screen
           options={{
-            title: modalidade.nome,
+            title: graduacao.nome,
           }}
         />
 
@@ -129,47 +135,29 @@ export default function ModalidadeDetalhesScreen() {
 
           <View style={styles.cabecalho}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarTexto}>
-                {modalidade.nome?.charAt(0).toUpperCase()}
-              </Text>
+              <Text style={styles.avatarTexto}>🥋</Text>
             </View>
 
             <View style={styles.cabecalhoInfo}>
-              <Text style={styles.nome}>{modalidade.nome}</Text>
+              <Text style={styles.nome}>{graduacao.nome}</Text>
 
-              <View
-                style={[
-                  styles.status,
-                  modalidade.ativa ? styles.statusAtiva : styles.statusInativa,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.statusTexto,
-                    modalidade.ativa
-                      ? styles.statusTextoAtiva
-                      : styles.statusTextoInativa,
-                  ]}
-                >
-                  {modalidade.ativa ? "ATIVA" : "INATIVA"}
-                </Text>
-              </View>
+              <Text style={styles.modalidade}>{graduacao.modalidadeNome}</Text>
             </View>
           </View>
 
-          {/* Dados da modalidade */}
+          {/* Dados da graduação */}
 
           <View style={styles.card}>
             <View style={styles.tituloSecao}>
               <View style={styles.iconeSecao}>
-                <Text style={styles.iconeTexto}>🥋</Text>
+                <Text style={styles.iconeTexto}>🎓</Text>
               </View>
 
               <View>
-                <Text style={styles.secao}>Dados da modalidade</Text>
+                <Text style={styles.secao}>Dados da graduação</Text>
 
                 <Text style={styles.descricaoSecao}>
-                  Informações da modalidade
+                  Informações da graduação
                 </Text>
               </View>
             </View>
@@ -177,23 +165,25 @@ export default function ModalidadeDetalhesScreen() {
             <View style={styles.campo}>
               <Text style={styles.label}>Nome</Text>
 
-              <Text style={styles.valor}>{modalidade.nome}</Text>
+              <Text style={styles.valor}>{graduacao.nome}</Text>
             </View>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>Descrição</Text>
+              <Text style={styles.label}>Modalidade</Text>
 
-              <Text style={styles.valor}>
-                {modalidade.descricao || "Não informada"}
-              </Text>
+              <Text style={styles.valor}>{graduacao.modalidadeNome}</Text>
             </View>
 
             <View style={styles.campo}>
-              <Text style={styles.label}>Situação</Text>
+              <Text style={styles.label}>Ordem</Text>
 
-              <Text style={styles.valor}>
-                {modalidade.ativa ? "Ativa" : "Inativa"}
-              </Text>
+              <Text style={styles.valor}>{graduacao.ordem}</Text>
+            </View>
+
+            <View style={styles.campo}>
+              <Text style={styles.label}>Quantidade de graus</Text>
+
+              <Text style={styles.valor}>{graduacao.quantidadeGraus}</Text>
             </View>
           </View>
 
@@ -202,18 +192,12 @@ export default function ModalidadeDetalhesScreen() {
           <View style={styles.acoes}>
             <Permissao permissao="MODALIDADE_EDITAR" esconder>
               <Pressable
-                style={styles.botaoGraduacoes}
-                onPress={() => router.push(`/modalidade/${id}/graduacoes`)}
-                disabled={excluindo}
-              >
-                <Text style={styles.botaoGraduacoesTexto}>🥋 Graduações</Text>
-              </Pressable>
-            </Permissao>
-
-            <Permissao permissao="MODALIDADE_EDITAR" esconder>
-              <Pressable
                 style={styles.botaoEditar}
-                onPress={() => router.push(`/modalidade/editar/${id}`)}
+                onPress={() =>
+                  router.push(
+                    `/modalidade/${id}/graduacoes/${graduacaoId}/editar`,
+                  )
+                }
                 disabled={excluindo}
               >
                 <Text style={styles.botaoEditarTexto}>✏️ Editar</Text>
@@ -273,9 +257,7 @@ const styles = StyleSheet.create({
   },
 
   avatarTexto: {
-    color: "#FFFFFF",
     fontSize: 28,
-    fontWeight: "bold",
   },
 
   cabecalhoInfo: {
@@ -286,35 +268,12 @@ const styles = StyleSheet.create({
     fontSize: 23,
     fontWeight: "bold",
     color: "#FFFFFF",
-    marginBottom: 7,
+    marginBottom: 6,
   },
 
-  status: {
-    alignSelf: "flex-start",
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-
-  statusAtiva: {
-    backgroundColor: "#12351F",
-  },
-
-  statusInativa: {
-    backgroundColor: "#3A171A",
-  },
-
-  statusTexto: {
-    fontSize: 11,
-    fontWeight: "bold",
-  },
-
-  statusTextoAtiva: {
-    color: "#75D89A",
-  },
-
-  statusTextoInativa: {
-    color: "#F08A91",
+  modalidade: {
+    fontSize: 14,
+    color: "#888888",
   },
 
   card: {
@@ -390,22 +349,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 20,
     gap: 10,
-  },
-
-  botaoGraduacoes: {
-    height: 50,
-    borderRadius: 12,
-    backgroundColor: "#151515",
-    borderWidth: 1,
-    borderColor: "#333333",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  botaoGraduacoesTexto: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
   },
 
   botaoEditar: {
