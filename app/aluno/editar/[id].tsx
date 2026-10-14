@@ -1,8 +1,10 @@
+import * as ImagePicker from "expo-image-picker";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -16,7 +18,13 @@ import {
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
 
-import { atualizarAluno, buscarAluno } from "@/services/alunoService";
+import {
+  atualizarAluno,
+  buscarAluno,
+  buscarFotoAluno,
+  enviarFotoAluno,
+  excluirFotoAluno,
+} from "@/services/alunoService";
 
 import {
   formatarCep,
@@ -48,6 +56,9 @@ export default function EditarAlunoScreen() {
   const [cep, setCep] = useState("");
   const [pontoReferencia, setPontoReferencia] = useState("");
 
+  const [fotoUri, setFotoUri] = useState<string | null>(null);
+  const [novaFoto, setNovaFoto] = useState<string | null>(null);
+
   useEffect(() => {
     carregarAluno();
   }, [id]);
@@ -71,6 +82,17 @@ export default function EditarAlunoScreen() {
       setEstado(resposta.endereco?.estado ?? "");
       setCep(formatarCep(resposta.endereco?.cep ?? ""));
       setPontoReferencia(resposta.endereco?.pontoReferencia ?? "");
+
+      if (resposta.possuiFoto) {
+        try {
+          const foto = await buscarFotoAluno(id);
+          const uri = arrayBufferToUri(foto);
+
+          setFotoUri(uri);
+        } catch {
+          setFotoUri(null);
+        }
+      }
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert("Erro", error.message, [
@@ -90,6 +112,73 @@ export default function EditarAlunoScreen() {
     } finally {
       setCarregando(false);
     }
+  }
+
+  async function selecionarFoto() {
+    try {
+      const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permissao.granted) {
+        Alert.alert(
+          "Permissão necessária",
+          "Precisamos de acesso às suas fotos para selecionar uma imagem.",
+        );
+        return;
+      }
+
+      const resultado = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (resultado.canceled) {
+        return;
+      }
+
+      const uri = resultado.assets[0]?.uri;
+
+      if (uri) {
+        setNovaFoto(uri);
+        setFotoUri(uri);
+      }
+    } catch {
+      Alert.alert("Erro", "Não foi possível selecionar a foto.");
+    }
+  }
+
+  async function excluirFoto() {
+    Alert.alert(
+      "Excluir foto",
+      "Deseja realmente excluir a foto deste aluno?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await excluirFotoAluno(id);
+
+              setFotoUri(null);
+              setNovaFoto(null);
+
+              Alert.alert("Sucesso", "Foto excluída com sucesso.");
+            } catch (error) {
+              if (error instanceof Error) {
+                Alert.alert("Erro", error.message);
+              } else {
+                Alert.alert("Erro", "Não foi possível excluir a foto.");
+              }
+            }
+          },
+        },
+      ],
+    );
   }
 
   async function salvar() {
@@ -168,6 +257,14 @@ export default function EditarAlunoScreen() {
         },
       });
 
+      if (novaFoto) {
+        await enviarFotoAluno(id, {
+          uri: novaFoto,
+          name: "foto.jpg",
+          type: "image/jpeg",
+        });
+      }
+
       Alert.alert("Sucesso", "Aluno alterado com sucesso!", [
         {
           text: "OK",
@@ -183,6 +280,28 @@ export default function EditarAlunoScreen() {
     } finally {
       setSalvando(false);
     }
+  }
+
+  function arrayBufferToUri(arrayBuffer: ArrayBuffer): string {
+    const base64 = arrayBufferToBase64(arrayBuffer);
+
+    return `data:image/jpeg;base64,${base64}`;
+  }
+
+  function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+
+    let binary = "";
+
+    const chunkSize = 0x8000;
+
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+
+      binary += String.fromCharCode(...chunk);
+    }
+
+    return btoa(binary);
   }
 
   if (carregando) {
@@ -216,8 +335,65 @@ export default function EditarAlunoScreen() {
           >
             <View style={styles.cabecalho}>
               <Text style={styles.titulo}>Editar aluno</Text>
+
               <Text style={styles.subtitulo}>Altere os dados do aluno</Text>
             </View>
+
+            {/* FOTO */}
+
+            <View style={styles.card}>
+              <View style={styles.tituloSecao}>
+                <View style={styles.iconeSecao}>
+                  <Text style={styles.iconeTexto}>📷</Text>
+                </View>
+
+                <View>
+                  <Text style={styles.secao}>Foto do aluno</Text>
+
+                  <Text style={styles.descricaoSecao}>
+                    Atualize ou exclua a foto do aluno
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.fotoArea}>
+                {fotoUri ? (
+                  <Image source={{ uri: fotoUri }} style={styles.foto} />
+                ) : (
+                  <View style={styles.fotoPlaceholder}>
+                    <Text style={styles.fotoPlaceholderTexto}>
+                      {nome?.charAt(0).toUpperCase() || "A"}
+                    </Text>
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  style={styles.botaoFoto}
+                  onPress={selecionarFoto}
+                  disabled={salvando}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.botaoFotoTexto}>
+                    📷 {fotoUri ? "Alterar foto" : "Selecionar foto"}
+                  </Text>
+                </TouchableOpacity>
+
+                {fotoUri ? (
+                  <TouchableOpacity
+                    style={styles.botaoExcluirFoto}
+                    onPress={excluirFoto}
+                    disabled={salvando}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.botaoExcluirFotoTexto}>
+                      🗑️ Excluir foto
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            </View>
+
+            {/* DADOS PESSOAIS */}
 
             <View style={styles.card}>
               <View style={styles.tituloSecao}>
@@ -227,6 +403,7 @@ export default function EditarAlunoScreen() {
 
                 <View>
                   <Text style={styles.secao}>Dados pessoais</Text>
+
                   <Text style={styles.descricaoSecao}>
                     Informações básicas do aluno
                   </Text>
@@ -300,6 +477,8 @@ export default function EditarAlunoScreen() {
               />
             </View>
 
+            {/* ENDEREÇO */}
+
             <View style={styles.card}>
               <View style={styles.tituloSecao}>
                 <View style={styles.iconeSecao}>
@@ -308,6 +487,7 @@ export default function EditarAlunoScreen() {
 
                 <View>
                   <Text style={styles.secao}>Endereço</Text>
+
                   <Text style={styles.descricaoSecao}>
                     Localização e endereço residencial
                   </Text>
@@ -605,6 +785,65 @@ const styles = StyleSheet.create({
     height: 80,
     paddingTop: 12,
     textAlignVertical: "top",
+  },
+
+  fotoArea: {
+    alignItems: "center",
+    paddingTop: 12,
+  },
+
+  foto: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    marginBottom: 16,
+  },
+
+  fotoPlaceholder: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: "#C1121F",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  fotoPlaceholderTexto: {
+    color: "#FFFFFF",
+    fontSize: 52,
+    fontWeight: "bold",
+  },
+
+  botaoFoto: {
+    height: 48,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    backgroundColor: "#242424",
+    borderWidth: 1,
+    borderColor: "#3A3A3A",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  botaoFotoTexto: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  botaoExcluirFoto: {
+    height: 44,
+    paddingHorizontal: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+  },
+
+  botaoExcluirFotoTexto: {
+    color: "#E04B55",
+    fontSize: 14,
+    fontWeight: "600",
   },
 
   botao: {

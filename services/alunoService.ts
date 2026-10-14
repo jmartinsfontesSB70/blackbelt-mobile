@@ -54,3 +54,26 @@ export async function listarAlunosParaSelecao() {
 
   return alunos;
 }
+
+export async function buscarFotoAluno(id: string) {
+  return await apiFetch(`/alunos/${id}/foto`, {
+    responseType: "arrayBuffer",
+  });
+}
+
+export async function enviarFotoAluno(id: string, arquivo: any) {
+  const formData = new FormData();
+
+  formData.append("foto", arquivo);
+
+  return await apiFetch(`/alunos/${id}/foto`, {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export async function excluirFotoAluno(id: string) {
+  return await apiFetch(`/alunos/${id}/foto`, {
+    method: "DELETE",
+  });
+}

@@ -3,14 +3,22 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const API_URL = "http://192.168.1.4:8080/api/v1";
 //const API_URL = "http://localhost:8080/api/v1";
 
-export async function apiFetch(endpoint: string, options: RequestInit = {}) {
+export async function apiFetch(
+  endpoint: string,
+  options: RequestInit & {
+    responseType?: "json" | "blob" | "arrayBuffer";
+  } = {},
+) {
   const token = await AsyncStorage.getItem("token");
 
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
 
-  if (options.body && !headers["Content-Type"]) {
+  const isFormData =
+    typeof FormData !== "undefined" && options.body instanceof FormData;
+
+  if (options.body && !isFormData && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -24,9 +32,12 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
-    // Login com usuário ou senha inválidos
     if (endpoint === "/login" && response.status === 401) {
       throw new Error("Usuário ou senha não conferem.");
+    }
+
+    if (response.status === 401) {
+      throw new Error("Sua sessão expirou. Faça login novamente.");
     }
 
     let mensagem = `Erro na comunicação com a API (${response.status}).`;
@@ -44,6 +55,14 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
   if (response.status === 204) {
     return null;
+  }
+
+  if (options.responseType === "arrayBuffer") {
+    return await response.arrayBuffer();
+  }
+
+  if (options.responseType === "blob") {
+    return await response.blob();
   }
 
   return await response.json();

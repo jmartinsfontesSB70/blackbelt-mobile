@@ -1,8 +1,10 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -20,19 +22,27 @@ import {
   formatarTelefone,
 } from "@/utils/masks";
 
-import { buscarProfessor, excluirProfessor } from "@/services/professorService";
+import {
+  buscarFotoProfessor,
+  buscarProfessor,
+  excluirProfessor,
+} from "@/services/professorService";
 
 export default function ProfessorDetalhesScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [professor, setProfessor] = useState<any>(null);
+  const [fotoUri, setFotoUri] = useState<string | null>(null);
+
   const [mensagem, setMensagem] = useState("");
   const [excluindo, setExcluindo] = useState(false);
 
-  useEffect(() => {
-    carregarProfessor();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      carregarProfessor();
+    }, [id]),
+  );
 
   async function carregarProfessor() {
     try {
@@ -41,6 +51,24 @@ export default function ProfessorDetalhesScreen() {
       const resposta = await buscarProfessor(id);
 
       setProfessor(resposta);
+
+      setFotoUri(null);
+
+      if (resposta.possuiFoto) {
+        try {
+          const arrayBuffer = await buscarFotoProfessor(id);
+
+          const uri = arrayBufferToUri(arrayBuffer);
+
+          setFotoUri(uri);
+        } catch (error) {
+          console.error(
+            "Não foi possível carregar a foto do professor:",
+            id,
+            error,
+          );
+        }
+      }
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
@@ -130,11 +158,15 @@ export default function ProfessorDetalhesScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.cabecalho}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarTexto}>
-                {professor.nome?.charAt(0).toUpperCase()}
-              </Text>
-            </View>
+            {fotoUri ? (
+              <Image source={{ uri: fotoUri }} style={styles.avatarFoto} />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarTexto}>
+                  {professor.nome?.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
 
             <View style={styles.cabecalhoInfo}>
               <Text style={styles.nome}>{professor.nome}</Text>
@@ -313,6 +345,28 @@ export default function ProfessorDetalhesScreen() {
   );
 }
 
+function arrayBufferToUri(arrayBuffer: ArrayBuffer): string {
+  const base64 = arrayBufferToBase64(arrayBuffer);
+
+  return `data:image/jpeg;base64,${base64}`;
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+
+  let binary = "";
+
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
+}
+
 const styles = StyleSheet.create({
   tela: {
     flex: 1,
@@ -331,18 +385,26 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: "#C1121F",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
   },
 
+  avatarFoto: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginRight: 16,
+    backgroundColor: "#1A1A1A",
+  },
+
   avatarTexto: {
     color: "#FFFFFF",
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "bold",
   },
 

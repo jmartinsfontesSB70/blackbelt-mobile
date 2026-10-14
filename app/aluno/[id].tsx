@@ -1,8 +1,10 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,7 +15,11 @@ import {
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
 
-import { buscarAluno, excluirAluno } from "@/services/alunoService";
+import {
+  buscarAluno,
+  buscarFotoAluno,
+  excluirAluno,
+} from "@/services/alunoService";
 
 import {
   formatarCep,
@@ -27,20 +33,36 @@ export default function AlunoDetalhesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [aluno, setAluno] = useState<any>(null);
+  const [fotoUri, setFotoUri] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState("");
   const [excluindo, setExcluindo] = useState(false);
 
-  useEffect(() => {
-    carregarAluno();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      carregarAluno();
+    }, [id]),
+  );
 
   async function carregarAluno() {
     try {
       setMensagem("");
+      setFotoUri(null);
 
       const resposta = await buscarAluno(id);
 
       setAluno(resposta);
+
+      if (resposta.possuiFoto) {
+        try {
+          const foto = await buscarFotoAluno(id);
+          const uri = arrayBufferToUri(foto);
+          setFotoUri(uri);
+        } catch {
+          // Se a foto não puder ser carregada,
+          // mantemos o avatar com a inicial do nome.
+          setFotoUri(null);
+        }
+      }
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
@@ -48,6 +70,28 @@ export default function AlunoDetalhesScreen() {
         setMensagem("Erro ao carregar aluno.");
       }
     }
+  }
+
+  function arrayBufferToUri(arrayBuffer: ArrayBuffer): string {
+    const base64 = arrayBufferToBase64(arrayBuffer);
+
+    return `data:image/jpeg;base64,${base64}`;
+  }
+
+  function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+
+    let binary = "";
+
+    const chunkSize = 0x8000;
+
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+
+      binary += String.fromCharCode(...chunk);
+    }
+
+    return btoa(binary);
   }
 
   function confirmarExclusao() {
@@ -126,11 +170,15 @@ export default function AlunoDetalhesScreen() {
           {/* Cabeçalho */}
 
           <View style={styles.cabecalho}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarTexto}>
-                {aluno.nome?.charAt(0).toUpperCase()}
-              </Text>
-            </View>
+            {fotoUri ? (
+              <Image source={{ uri: fotoUri }} style={styles.avatarFoto} />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarTexto}>
+                  {aluno.nome?.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
 
             <View style={styles.cabecalhoInfo}>
               <Text style={styles.nome}>{aluno.nome}</Text>
@@ -346,6 +394,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#C1121F",
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 16,
+  },
+
+  avatarFoto: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     marginRight: 16,
   },
 

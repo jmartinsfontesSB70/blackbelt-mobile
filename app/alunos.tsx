@@ -14,13 +14,15 @@ import {
 import AlunoCard from "@/components/AlunoCard";
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
-import { listarAlunos } from "@/services/alunoService";
+import { buscarFotoAluno, listarAlunos } from "@/services/alunoService";
 import { formatarCpf } from "@/utils/masks";
 
 export default function AlunosScreen() {
   const router = useRouter();
 
   const [alunos, setAlunos] = useState<any[]>([]);
+  const [fotos, setFotos] = useState<Record<string, string>>({});
+
   const [mensagem, setMensagem] = useState("");
 
   const [pagina, setPagina] = useState(0);
@@ -45,6 +47,32 @@ export default function AlunosScreen() {
       setAlunos(novosAlunos);
       setPagina(0);
       setTemMais(!resposta.last);
+
+      const novasFotos: Record<string, string> = {};
+
+      await Promise.all(
+        novosAlunos.map(async (aluno: any) => {
+          if (!aluno.possuiFoto) {
+            return;
+          }
+
+          try {
+            const arrayBuffer = await buscarFotoAluno(aluno.id.toString());
+
+            const uri = arrayBufferToUri(arrayBuffer);
+
+            novasFotos[aluno.id.toString()] = uri;
+          } catch (error) {
+            console.error(
+              "Não foi possível carregar a foto do aluno:",
+              aluno.id,
+              error,
+            );
+          }
+        }),
+      );
+
+      setFotos(novasFotos);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
@@ -87,6 +115,35 @@ export default function AlunosScreen() {
 
       setPagina(proximaPagina);
       setTemMais(!resposta.last);
+
+      const novasFotos: Record<string, string> = {};
+
+      await Promise.all(
+        novosAlunos.map(async (aluno: any) => {
+          if (!aluno.possuiFoto) {
+            return;
+          }
+
+          try {
+            const arrayBuffer = await buscarFotoAluno(aluno.id.toString());
+
+            const uri = arrayBufferToUri(arrayBuffer);
+
+            novasFotos[aluno.id.toString()] = uri;
+          } catch (error) {
+            console.error(
+              "Não foi possível carregar a foto do aluno:",
+              aluno.id,
+              error,
+            );
+          }
+        }),
+      );
+
+      setFotos((fotosAtuais) => ({
+        ...fotosAtuais,
+        ...novasFotos,
+      }));
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
@@ -100,12 +157,6 @@ export default function AlunosScreen() {
 
   function executarPesquisa() {
     setPesquisa(textoPesquisa.trim());
-  }
-
-  function handlePesquisaKeyDown(event: any) {
-    if (event.nativeEvent.key === "Enter") {
-      executarPesquisa();
-    }
   }
 
   function ordenarPor(campo: string) {
@@ -197,6 +248,7 @@ export default function AlunosScreen() {
               <AlunoCard
                 nome={item.nome}
                 cpf={item.cpf ? formatarCpf(item.cpf) : ""}
+                fotoUri={fotos[item.id.toString()]}
                 onPress={() => router.push(`/aluno/${item.id}`)}
               />
             )}
@@ -213,6 +265,28 @@ export default function AlunosScreen() {
       </View>
     </RotaPermissao>
   );
+}
+
+function arrayBufferToUri(arrayBuffer: ArrayBuffer): string {
+  const base64 = arrayBufferToBase64(arrayBuffer);
+
+  return `data:image/jpeg;base64,${base64}`;
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+
+  let binary = "";
+
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
 }
 
 const styles = StyleSheet.create({

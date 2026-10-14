@@ -1,10 +1,13 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 
+import * as ImagePicker from "expo-image-picker";
+
 import { useEffect, useState } from "react";
 
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -29,7 +32,10 @@ import {
 
 import {
   atualizarProfessor,
+  buscarFotoProfessor,
   buscarProfessor,
+  enviarFotoProfessor,
+  excluirFotoProfessor,
 } from "@/services/professorService";
 
 export default function EditarProfessorScreen() {
@@ -53,6 +59,9 @@ export default function EditarProfessorScreen() {
   const [estado, setEstado] = useState("");
   const [cep, setCep] = useState("");
   const [pontoReferencia, setPontoReferencia] = useState("");
+
+  const [fotoUri, setFotoUri] = useState<string | null>(null);
+  const [novaFoto, setNovaFoto] = useState<string | null>(null);
 
   const [mensagem, setMensagem] = useState("");
   const [carregando, setCarregando] = useState(true);
@@ -113,6 +122,24 @@ export default function EditarProfessorScreen() {
 
         setPontoReferencia(professor.endereco.pontoReferencia ?? "");
       }
+
+      setFotoUri(null);
+      setNovaFoto(null);
+
+      if (professor.possuiFoto) {
+        try {
+          const arrayBuffer = await buscarFotoProfessor(id);
+          const uri = arrayBufferToUri(arrayBuffer);
+
+          setFotoUri(uri);
+        } catch (error) {
+          console.error(
+            "Não foi possível carregar a foto do professor:",
+            id,
+            error,
+          );
+        }
+      }
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
@@ -122,6 +149,69 @@ export default function EditarProfessorScreen() {
     } finally {
       setCarregando(false);
     }
+  }
+
+  async function selecionarFoto() {
+    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissao.granted) {
+      Alert.alert(
+        "Permissão necessária",
+        "Permita o acesso às fotos para selecionar uma imagem.",
+      );
+
+      return;
+    }
+
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (resultado.canceled) {
+      return;
+    }
+
+    const uri = resultado.assets[0]?.uri;
+
+    if (uri) {
+      setNovaFoto(uri);
+    }
+  }
+
+  function excluirFoto() {
+    Alert.alert(
+      "Excluir foto",
+      "Deseja realmente excluir a foto do professor?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await excluirFotoProfessor(id);
+
+              setFotoUri(null);
+              setNovaFoto(null);
+
+              Alert.alert("Sucesso", "Foto excluída com sucesso.");
+            } catch (error) {
+              if (error instanceof Error) {
+                Alert.alert("Erro", error.message);
+              } else {
+                Alert.alert("Erro", "Não foi possível excluir a foto.");
+              }
+            }
+          },
+        },
+      ],
+    );
   }
 
   function validarData(data_digitada: string, campo: string) {
@@ -256,6 +346,14 @@ export default function EditarProfessorScreen() {
         },
       });
 
+      if (novaFoto) {
+        await enviarFotoProfessor(id, {
+          uri: novaFoto,
+          name: "foto.jpg",
+          type: "image/jpeg",
+        });
+      }
+
       Alert.alert("Sucesso", "Professor atualizado com sucesso!", [
         {
           text: "OK",
@@ -297,6 +395,8 @@ export default function EditarProfessorScreen() {
     );
   }
 
+  const fotoExibida = novaFoto ?? fotoUri;
+
   return (
     <RotaPermissao permissao="PROFESSOR_EDITAR">
       <>
@@ -337,6 +437,48 @@ export default function EditarProfessorScreen() {
                   </Text>
                 </View>
               </View>
+
+              <View style={styles.areaFoto}>
+                {fotoExibida ? (
+                  <Image source={{ uri: fotoExibida }} style={styles.foto} />
+                ) : (
+                  <View style={styles.fotoPlaceholder}>
+                    <Text style={styles.fotoPlaceholderTexto}>👤</Text>
+                  </View>
+                )}
+
+                <View style={styles.botoesFoto}>
+                  <TouchableOpacity
+                    style={styles.botaoFoto}
+                    onPress={selecionarFoto}
+                    disabled={salvando}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.botaoFotoTexto}>
+                      {fotoExibida ? "Trocar foto" : "Selecionar foto"}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {fotoUri && !novaFoto && (
+                    <TouchableOpacity
+                      style={styles.botaoExcluirFoto}
+                      onPress={excluirFoto}
+                      disabled={salvando}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.botaoExcluirFotoTexto}>
+                        Excluir foto
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+
+              {novaFoto && (
+                <Text style={styles.avisoFoto}>
+                  A nova foto será salva ao tocar em "Salvar alterações".
+                </Text>
+              )}
 
               <Text style={styles.label}>Nome completo *</Text>
 
@@ -605,6 +747,28 @@ export default function EditarProfessorScreen() {
   );
 }
 
+function arrayBufferToUri(arrayBuffer: ArrayBuffer): string {
+  const base64 = arrayBufferToBase64(arrayBuffer);
+
+  return `data:image/jpeg;base64,${base64}`;
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+
+  let binary = "";
+
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
+}
+
 const styles = StyleSheet.create({
   tela: {
     flex: 1,
@@ -681,6 +845,84 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#888888",
     marginTop: 2,
+  },
+
+  areaFoto: {
+    alignItems: "center",
+    marginTop: 18,
+    marginBottom: 8,
+  },
+
+  foto: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#0D0D0D",
+    borderWidth: 2,
+    borderColor: "#2B2B2B",
+  },
+
+  fotoPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#0D0D0D",
+    borderWidth: 1,
+    borderColor: "#2B2B2B",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  fotoPlaceholderTexto: {
+    fontSize: 48,
+  },
+
+  botoesFoto: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 12,
+  },
+
+  botaoFoto: {
+    height: 42,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    backgroundColor: "#242424",
+    borderWidth: 1,
+    borderColor: "#3A3A3A",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  botaoFotoTexto: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  botaoExcluirFoto: {
+    height: 42,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    backgroundColor: "#3A171A",
+    borderWidth: 1,
+    borderColor: "#5A2529",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  botaoExcluirFotoTexto: {
+    color: "#F08A91",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  avisoFoto: {
+    textAlign: "center",
+    color: "#888888",
+    fontSize: 12,
+    marginTop: 4,
+    marginBottom: 4,
   },
 
   label: {

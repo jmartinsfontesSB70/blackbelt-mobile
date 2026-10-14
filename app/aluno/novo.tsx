@@ -1,8 +1,10 @@
+import * as ImagePicker from "expo-image-picker";
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -24,7 +26,7 @@ import {
   formatarTelefone,
 } from "@/utils/masks";
 
-import { criarAluno } from "@/services/alunoService";
+import { criarAluno, enviarFotoAluno } from "@/services/alunoService";
 
 export default function NovoAlunoScreen() {
   const router = useRouter();
@@ -43,7 +45,40 @@ export default function NovoAlunoScreen() {
   const [cep, setCep] = useState("");
   const [pontoReferencia, setPontoReferencia] = useState("");
 
+  const [foto, setFoto] = useState<string | null>(null);
+
   const [salvando, setSalvando] = useState(false);
+
+  async function selecionarFoto() {
+    try {
+      const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permissao.granted) {
+        Alert.alert(
+          "Permissão necessária",
+          "Precisamos de acesso às suas fotos para selecionar uma foto do aluno.",
+        );
+        return;
+      }
+
+      const resultado = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (resultado.canceled) {
+        return;
+      }
+
+      const imagem = resultado.assets[0];
+
+      setFoto(imagem.uri);
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível selecionar a foto.");
+    }
+  }
 
   async function salvar() {
     if (!nome.trim()) {
@@ -61,12 +96,6 @@ export default function NovoAlunoScreen() {
       return;
     }
 
-    /*
-     * Validação da data antes de enviar para a API.
-     *
-     * Usamos um nome diferente para deixar claro que estamos
-     * trabalhando com o valor digitado pelo usuário.
-     */
     const data_digitada = dataNascimento.trim();
 
     if (!validarData(data_digitada)) {
@@ -110,7 +139,7 @@ export default function NovoAlunoScreen() {
     try {
       setSalvando(true);
 
-      await criarAluno({
+      const alunoSalvo = await criarAluno({
         nome: nome.trim(),
         cpf: cpf.replace(/\D/g, ""),
         dataNascimento: formatarDataParaApi(data_digitada),
@@ -128,6 +157,14 @@ export default function NovoAlunoScreen() {
           pontoReferencia: pontoReferencia.trim(),
         },
       });
+
+      if (foto) {
+        await enviarFotoAluno(alunoSalvo.id.toString(), {
+          uri: foto,
+          name: "foto.jpg",
+          type: "image/jpeg",
+        });
+      }
 
       Alert.alert("Sucesso", "Aluno cadastrado com sucesso!", [
         {
@@ -189,6 +226,29 @@ export default function NovoAlunoScreen() {
                     Informações básicas do aluno
                   </Text>
                 </View>
+              </View>
+
+              {/* Foto */}
+
+              <View style={styles.fotoContainer}>
+                {foto ? (
+                  <Image source={{ uri: foto }} style={styles.foto} />
+                ) : (
+                  <View style={styles.fotoPlaceholder}>
+                    <Text style={styles.fotoPlaceholderTexto}>👤</Text>
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  style={styles.botaoFoto}
+                  onPress={selecionarFoto}
+                  disabled={salvando}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.botaoFotoTexto}>
+                    {foto ? "Alterar foto" : "Adicionar foto"}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               <Text style={styles.label}>Nome completo *</Text>
@@ -401,12 +461,11 @@ export default function NovoAlunoScreen() {
 }
 
 /**
-
-* Valida uma data digitada no formato DD/MM/AAAA.
-*
-* Não usamos apenas new Date(), porque o JavaScript pode
-* normalizar datas inexistentes, como 31/02/2026.
-  */
+ * Valida uma data digitada no formato DD/MM/AAAA.
+ *
+ * Não usamos apenas new Date(), porque o JavaScript pode
+ * normalizar datas inexistentes, como 31/02/2026.
+ */
 function validarData(data_digitada: string): boolean {
   const partes = data_digitada.split("/");
 
@@ -531,6 +590,53 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#888888",
     marginTop: 2,
+  },
+
+  fotoContainer: {
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 8,
+  },
+
+  foto: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#0D0D0D",
+    borderWidth: 2,
+    borderColor: "#333333",
+    marginBottom: 12,
+  },
+
+  fotoPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#0D0D0D",
+    borderWidth: 2,
+    borderColor: "#333333",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+
+  fotoPlaceholderTexto: {
+    fontSize: 42,
+  },
+
+  botaoFoto: {
+    backgroundColor: "#242424",
+    borderWidth: 1,
+    borderColor: "#3A3A3A",
+    borderRadius: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+  },
+
+  botaoFotoTexto: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
   },
 
   label: {

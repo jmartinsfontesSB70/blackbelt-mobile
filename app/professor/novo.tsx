@@ -2,9 +2,12 @@ import { Stack, useRouter } from "expo-router";
 
 import { useState } from "react";
 
+import * as ImagePicker from "expo-image-picker";
+
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -26,7 +29,10 @@ import {
   formatarTelefone,
 } from "@/utils/masks";
 
-import { criarProfessor } from "@/services/professorService";
+import {
+  criarProfessor,
+  enviarFotoProfessor,
+} from "@/services/professorService";
 
 export default function NovoProfessorScreen() {
   const router = useRouter();
@@ -47,7 +53,32 @@ export default function NovoProfessorScreen() {
   const [cep, setCep] = useState("");
   const [pontoReferencia, setPontoReferencia] = useState("");
 
+  const [foto, setFoto] = useState<string | null>(null);
+
   const [salvando, setSalvando] = useState(false);
+
+  async function selecionarFoto() {
+    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissao.granted) {
+      Alert.alert(
+        "Permissão necessária",
+        "Permita o acesso às fotos para selecionar uma foto do professor.",
+      );
+      return;
+    }
+
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!resultado.canceled) {
+      setFoto(resultado.assets[0].uri);
+    }
+  }
 
   async function salvar() {
     if (!nome.trim()) {
@@ -134,7 +165,7 @@ export default function NovoProfessorScreen() {
     try {
       setSalvando(true);
 
-      await criarProfessor({
+      const professorSalvo = await criarProfessor({
         nome: nome.trim(),
         cpf: cpf.replace(/\D/g, ""),
         dataNascimento: formatarDataParaApi(dataNascimento),
@@ -156,6 +187,14 @@ export default function NovoProfessorScreen() {
           pontoReferencia: pontoReferencia.trim(),
         },
       });
+
+      if (foto) {
+        await enviarFotoProfessor(professorSalvo.id.toString(), {
+          uri: foto,
+          name: "foto.jpg",
+          type: "image/jpeg",
+        });
+      }
 
       Alert.alert("Sucesso", "Professor cadastrado com sucesso!", [
         {
@@ -261,6 +300,27 @@ export default function NovoProfessorScreen() {
                     Informações básicas do professor
                   </Text>
                 </View>
+              </View>
+
+              <View style={styles.fotoContainer}>
+                {foto ? (
+                  <Image source={{ uri: foto }} style={styles.foto} />
+                ) : (
+                  <View style={styles.fotoPlaceholder}>
+                    <Text style={styles.fotoPlaceholderTexto}>👤</Text>
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  style={styles.botaoFoto}
+                  onPress={selecionarFoto}
+                  disabled={salvando}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.botaoFotoTexto}>
+                    {foto ? "Trocar foto" : "Selecionar foto"}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               <Text style={styles.label}>Nome completo *</Text>
@@ -581,6 +641,51 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#888888",
     marginTop: 2,
+  },
+
+  fotoContainer: {
+    alignItems: "center",
+    marginTop: 12,
+    marginBottom: 8,
+  },
+
+  foto: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: "#1A1A1A",
+    marginBottom: 12,
+  },
+
+  fotoPlaceholder: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: "#0D0D0D",
+    borderWidth: 1,
+    borderColor: "#333333",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+
+  fotoPlaceholderTexto: {
+    fontSize: 48,
+  },
+
+  botaoFoto: {
+    backgroundColor: "#242424",
+    borderWidth: 1,
+    borderColor: "#3A3A3A",
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 9,
+  },
+
+  botaoFotoTexto: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
   },
 
   label: {

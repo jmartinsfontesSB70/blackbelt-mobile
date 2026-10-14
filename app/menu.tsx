@@ -117,6 +117,18 @@ export default function MenuScreen() {
           />
         )}
 
+        {/* FINANCEIRO */}
+        {(pode("TIPO_COBRANCA_LISTAR") || pode("COBRANCA_LISTAR")) && (
+          <>
+            <Text style={styles.secao}>FINANCEIRO</Text>
+
+            <MenuItem
+              titulo="Financeiro"
+              onPress={() => router.push("/financeiro")}
+            />
+          </>
+        )}
+
         {/* CONTA */}
         <Text style={styles.secao}>CONTA</Text>
 

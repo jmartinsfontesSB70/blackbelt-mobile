@@ -14,15 +14,18 @@ import {
 import Permissao from "@/components/Permissao";
 import ProfessorCard from "@/components/ProfessorCard";
 import RotaPermissao from "@/components/RotaPermissao";
-
+import {
+  buscarFotoProfessor,
+  listarProfessores,
+} from "@/services/professorService";
 import { formatarCpf, formatarTelefone } from "@/utils/masks";
-
-import { listarProfessores } from "@/services/professorService";
 
 export default function ProfessoresScreen() {
   const router = useRouter();
 
   const [professores, setProfessores] = useState<any[]>([]);
+  const [fotos, setFotos] = useState<Record<string, string>>({});
+
   const [mensagem, setMensagem] = useState("");
 
   const [pagina, setPagina] = useState(0);
@@ -53,6 +56,34 @@ export default function ProfessoresScreen() {
       setProfessores(novosProfessores);
       setPagina(0);
       setTemMais(!resposta.last);
+
+      const novasFotos: Record<string, string> = {};
+
+      await Promise.all(
+        novosProfessores.map(async (professor: any) => {
+          if (!professor.possuiFoto) {
+            return;
+          }
+
+          try {
+            const arrayBuffer = await buscarFotoProfessor(
+              professor.id.toString(),
+            );
+
+            const uri = arrayBufferToUri(arrayBuffer);
+
+            novasFotos[professor.id.toString()] = uri;
+          } catch (error) {
+            console.error(
+              "Não foi possível carregar a foto do professor:",
+              professor.id,
+              error,
+            );
+          }
+        }),
+      );
+
+      setFotos(novasFotos);
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
@@ -98,6 +129,37 @@ export default function ProfessoresScreen() {
 
       setPagina(proximaPagina);
       setTemMais(!resposta.last);
+
+      const novasFotos: Record<string, string> = {};
+
+      await Promise.all(
+        novosProfessores.map(async (professor: any) => {
+          if (!professor.possuiFoto) {
+            return;
+          }
+
+          try {
+            const arrayBuffer = await buscarFotoProfessor(
+              professor.id.toString(),
+            );
+
+            const uri = arrayBufferToUri(arrayBuffer);
+
+            novasFotos[professor.id.toString()] = uri;
+          } catch (error) {
+            console.error(
+              "Não foi possível carregar a foto do professor:",
+              professor.id,
+              error,
+            );
+          }
+        }),
+      );
+
+      setFotos((fotosAtuais) => ({
+        ...fotosAtuais,
+        ...novasFotos,
+      }));
     } catch (error) {
       if (error instanceof Error) {
         setMensagem(error.message);
@@ -204,6 +266,7 @@ export default function ProfessoresScreen() {
                 cpf={item.cpf ? formatarCpf(item.cpf) : ""}
                 telefone={item.telefone ? formatarTelefone(item.telefone) : ""}
                 ativo={item.ativo}
+                fotoUri={fotos[item.id.toString()]}
                 onPress={() => router.push(`/professor/${item.id}`)}
               />
             )}
@@ -220,6 +283,28 @@ export default function ProfessoresScreen() {
       </View>
     </RotaPermissao>
   );
+}
+
+function arrayBufferToUri(arrayBuffer: ArrayBuffer): string {
+  const base64 = arrayBufferToBase64(arrayBuffer);
+
+  return `data:image/jpeg;base64,${base64}`;
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+
+  let binary = "";
+
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
 }
 
 const styles = StyleSheet.create({

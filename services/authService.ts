@@ -26,9 +26,14 @@ export async function ativarLoginBiometrico(token: string): Promise<void> {
 }
 
 export async function obterTokenBiometrico(): Promise<string | null> {
-  return await SecureStore.getItemAsync(CHAVE_TOKEN_BIOMETRIA, {
-    requireAuthentication: true,
-  });
+  try {
+    return await SecureStore.getItemAsync(CHAVE_TOKEN_BIOMETRIA, {
+      requireAuthentication: true,
+    });
+  } catch {
+    // O usuário pode ter cancelado a autenticação biométrica.
+    return null;
+  }
 }
 
 export async function desativarLoginBiometrico(): Promise<void> {

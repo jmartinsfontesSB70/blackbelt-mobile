@@ -123,9 +123,7 @@ export default function HomeScreen() {
       const token = await obterTokenBiometrico();
 
       if (!token) {
-        setMensagem(
-          "Login biométrico ainda não está ativado neste dispositivo.",
-        );
+        setMensagem("Autenticação biométrica cancelada.");
         return;
       }
 

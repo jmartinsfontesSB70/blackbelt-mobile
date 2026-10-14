@@ -55,3 +55,26 @@ export async function listarProfessoresParaSelecao() {
 
   return professores;
 }
+
+export async function buscarFotoProfessor(id: string) {
+  return await apiFetch(`/professores/${id}/foto`, {
+    responseType: "arrayBuffer",
+  });
+}
+
+export async function enviarFotoProfessor(id: string, arquivo: any) {
+  const formData = new FormData();
+
+  formData.append("foto", arquivo);
+
+  return await apiFetch(`/professores/${id}/foto`, {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export async function excluirFotoProfessor(id: string) {
+  return await apiFetch(`/professores/${id}/foto`, {
+    method: "DELETE",
+  });
+}
