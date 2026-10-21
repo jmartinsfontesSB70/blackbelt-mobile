@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -116,113 +116,124 @@ export default function PresencasScreen() {
   }
 
   return (
-    <RotaPermissao permissao="PRESENCA_LISTAR">
-      <View style={styles.container}>
-        <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Presenças</Text>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Presenças",
+        }}
+      />
 
-          <View style={styles.botoesNovo}>
-            <Permissao permissao="PRESENCA_CRIAR" esconder>
-              <Pressable
-                style={styles.botaoNovo}
-                onPress={() => router.push("/presenca/chamada")}
-              >
-                <Text style={styles.botaoNovoTexto}>+ Nova chamada</Text>
-              </Pressable>
-            </Permissao>
+      <RotaPermissao permissao="PRESENCA_LISTAR">
+        <View style={styles.container}>
+          <View style={styles.cabecalho}>
+            <Text style={styles.titulo}>Presenças</Text>
 
-            <Permissao permissao="PRESENCA_CRIAR" esconder>
-              <Pressable
-                style={styles.botaoNovo}
-                onPress={() => router.push("/presenca/novo")}
-              >
-                <Text style={styles.botaoNovoTexto}>+ Nova presença</Text>
-              </Pressable>
-            </Permissao>
+            <View style={styles.botoesNovo}>
+              <Permissao permissao="PRESENCA_CRIAR" esconder>
+                <Pressable
+                  style={styles.botaoNovo}
+                  onPress={() => router.push("/presenca/chamada")}
+                >
+                  <Text style={styles.botaoNovoTexto}>+ Nova chamada</Text>
+                </Pressable>
+              </Permissao>
+
+              <Permissao permissao="PRESENCA_CRIAR" esconder>
+                <Pressable
+                  style={styles.botaoNovo}
+                  onPress={() => router.push("/presenca/novo")}
+                >
+                  <Text style={styles.botaoNovoTexto}>+ Nova presença</Text>
+                </Pressable>
+              </Permissao>
+            </View>
           </View>
-        </View>
 
-        <View style={styles.pesquisaContainer}>
-          <TextInput
-            style={styles.inputPesquisa}
-            placeholder="Pesquisar aluno ou turma..."
-            placeholderTextColor="#888888"
-            value={textoPesquisa}
-            onChangeText={setTextoPesquisa}
-            onSubmitEditing={executarPesquisa}
-            returnKeyType="search"
-          />
+          <View style={styles.pesquisaContainer}>
+            <TextInput
+              style={styles.inputPesquisa}
+              placeholder="Pesquisar aluno ou turma..."
+              placeholderTextColor="#888888"
+              value={textoPesquisa}
+              onChangeText={setTextoPesquisa}
+              onSubmitEditing={executarPesquisa}
+              returnKeyType="search"
+            />
 
-          <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
-            <Text style={styles.botaoPesquisaTexto}>🔎</Text>
-          </Pressable>
-        </View>
+            <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
+              <Text style={styles.botaoPesquisaTexto}>🔎</Text>
+            </Pressable>
+          </View>
 
-        <View style={styles.ordenacaoContainer}>
-          <Text style={styles.ordenacaoTexto}>Ordenar por:</Text>
+          <View style={styles.ordenacaoContainer}>
+            <Text style={styles.ordenacaoTexto}>Ordenar por:</Text>
 
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "data" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("data")}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "data" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "data" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("data")}
             >
-              Data {sort === "data" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "data" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                Data {sort === "data" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
 
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "id" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("id")}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "id" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("id")}
             >
-              ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
-        </View>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
+          </View>
 
-        {mensagem ? (
-          <Text style={styles.mensagem}>{mensagem}</Text>
-        ) : (
-          <FlatList
-            data={presencas}
-            keyExtractor={(presenca) => presenca.id.toString()}
-            renderItem={({ item }) => (
-              <PresencaCard
-                alunoNome={item.alunoNome}
-                turmaNome={item.turmaNome}
-                data={item.data}
-                presente={item.presente}
-                onPress={() => router.push(`/presenca/${item.id}`)}
-              />
-            )}
-            onEndReached={carregarProximaPagina}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              carregando ? (
-                <ActivityIndicator style={styles.carregando} color="#C1121F" />
-              ) : null
-            }
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
-    </RotaPermissao>
+          {mensagem ? (
+            <Text style={styles.mensagem}>{mensagem}</Text>
+          ) : (
+            <FlatList
+              data={presencas}
+              keyExtractor={(presenca) => presenca.id.toString()}
+              renderItem={({ item }) => (
+                <PresencaCard
+                  alunoNome={item.alunoNome}
+                  turmaNome={item.turmaNome}
+                  data={item.data}
+                  presente={item.presente}
+                  onPress={() => router.push(`/presenca/${item.id}`)}
+                />
+              )}
+              onEndReached={carregarProximaPagina}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                carregando ? (
+                  <ActivityIndicator
+                    style={styles.carregando}
+                    color="#C1121F"
+                  />
+                ) : null
+              }
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+      </RotaPermissao>
+    </>
   );
 }
 

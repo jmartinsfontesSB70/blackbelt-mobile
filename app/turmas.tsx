@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -112,106 +112,117 @@ export default function TurmasScreen() {
   }
 
   return (
-    <RotaPermissao permissao="TURMA_LISTAR">
-      <View style={styles.container}>
-        <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Turmas</Text>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Turmas",
+        }}
+      />
 
-          <Permissao permissao="TURMA_CRIAR" esconder>
-            <Pressable
-              style={styles.botaoNovo}
-              onPress={() => router.push("/turma/novo")}
-            >
-              <Text style={styles.botaoNovoTexto}>+ Nova turma</Text>
+      <RotaPermissao permissao="TURMA_LISTAR">
+        <View style={styles.container}>
+          <View style={styles.cabecalho}>
+            <Text style={styles.titulo}>Turmas</Text>
+
+            <Permissao permissao="TURMA_CRIAR" esconder>
+              <Pressable
+                style={styles.botaoNovo}
+                onPress={() => router.push("/turma/novo")}
+              >
+                <Text style={styles.botaoNovoTexto}>+ Nova turma</Text>
+              </Pressable>
+            </Permissao>
+          </View>
+
+          <View style={styles.pesquisaContainer}>
+            <TextInput
+              style={styles.inputPesquisa}
+              placeholder="Pesquisar turma..."
+              placeholderTextColor="#888888"
+              value={textoPesquisa}
+              onChangeText={setTextoPesquisa}
+              onSubmitEditing={executarPesquisa}
+              returnKeyType="search"
+            />
+
+            <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
+              <Text style={styles.botaoPesquisaTexto}>🔎</Text>
             </Pressable>
-          </Permissao>
-        </View>
+          </View>
 
-        <View style={styles.pesquisaContainer}>
-          <TextInput
-            style={styles.inputPesquisa}
-            placeholder="Pesquisar turma..."
-            placeholderTextColor="#888888"
-            value={textoPesquisa}
-            onChangeText={setTextoPesquisa}
-            onSubmitEditing={executarPesquisa}
-            returnKeyType="search"
-          />
+          <View style={styles.ordenacaoContainer}>
+            <Text style={styles.ordenacaoTexto}>Ordenar por:</Text>
 
-          <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
-            <Text style={styles.botaoPesquisaTexto}>🔎</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.ordenacaoContainer}>
-          <Text style={styles.ordenacaoTexto}>Ordenar por:</Text>
-
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "nome" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("nome")}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "nome" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "nome" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("nome")}
             >
-              Nome {sort === "nome" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "nome" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                Nome {sort === "nome" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
 
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "id" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("id")}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "id" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("id")}
             >
-              ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
-        </View>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
+          </View>
 
-        {mensagem ? (
-          <Text style={styles.mensagem}>{mensagem}</Text>
-        ) : (
-          <FlatList
-            data={turmas}
-            keyExtractor={(turma) => turma.id.toString()}
-            renderItem={({ item }) => (
-              <TurmaCard
-                nome={item.nome}
-                modalidadeNome={item.modalidadeNome}
-                professorNome={item.professorNome}
-                diasSemana={item.diasSemana}
-                horarioInicio={item.horarioInicio}
-                horarioFim={item.horarioFim}
-                capacidade={item.capacidade}
-                ativa={item.ativa}
-                onPress={() => router.push(`/turma/${item.id}`)}
-              />
-            )}
-            onEndReached={carregarProximaPagina}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              carregando ? (
-                <ActivityIndicator style={styles.carregando} color="#C1121F" />
-              ) : null
-            }
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
-    </RotaPermissao>
+          {mensagem ? (
+            <Text style={styles.mensagem}>{mensagem}</Text>
+          ) : (
+            <FlatList
+              data={turmas}
+              keyExtractor={(turma) => turma.id.toString()}
+              renderItem={({ item }) => (
+                <TurmaCard
+                  nome={item.nome}
+                  modalidadeNome={item.modalidadeNome}
+                  professorNome={item.professorNome}
+                  diasSemana={item.diasSemana}
+                  horarioInicio={item.horarioInicio}
+                  horarioFim={item.horarioFim}
+                  capacidade={item.capacidade}
+                  ativa={item.ativa}
+                  onPress={() => router.push(`/turma/${item.id}`)}
+                />
+              )}
+              onEndReached={carregarProximaPagina}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                carregando ? (
+                  <ActivityIndicator
+                    style={styles.carregando}
+                    color="#C1121F"
+                  />
+                ) : null
+              }
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+      </RotaPermissao>
+    </>
   );
 }
 

@@ -1,7 +1,10 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+
 import {
   Alert,
+  BackHandler,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,10 +16,91 @@ import MenuItem from "@/components/MenuItem";
 import { logout } from "@/services/authService";
 import { obterPermissoes } from "@/services/permissions";
 
+import {
+  consultarStatusLicenca,
+  type LicencaStatusResponse,
+} from "@/services/licencaStatusService";
+
+import { buscarLogoAcademia } from "@/services/academiaService";
+
+function arrayBufferParaBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const tamanhoBloco = 8192;
+  let binario = "";
+
+  for (let inicio = 0; inicio < bytes.length; inicio += tamanhoBloco) {
+    const bloco = bytes.subarray(
+      inicio,
+      Math.min(inicio + tamanhoBloco, bytes.length),
+    );
+
+    binario += String.fromCharCode(...bloco);
+  }
+
+  return btoa(binario);
+}
+
 export default function MenuScreen() {
   const router = useRouter();
 
   const [permissoes, setPermissoes] = useState<string[]>([]);
+
+  const [statusLicenca, setStatusLicenca] =
+    useState<LicencaStatusResponse | null>(null);
+
+  const [logoFundo, setLogoFundo] = useState<string | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      let ativo = true;
+
+      async function carregarLogoFundo() {
+        try {
+          const buffer = await buscarLogoAcademia();
+          const base64 = arrayBufferParaBase64(buffer);
+
+          if (ativo) {
+            setLogoFundo(`data:image/jpeg;base64,${base64}`);
+          }
+        } catch (error) {
+          console.error("Não foi possível carregar a logo de fundo:", error);
+        }
+      }
+
+      carregarLogoFundo();
+
+      return () => {
+        ativo = false;
+      };
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          confirmarSaida();
+          return true;
+        },
+      );
+
+      return () => subscription.remove();
+    }, []),
+  );
+
+  useEffect(() => {
+    async function carregarStatusLicenca() {
+      try {
+        const status = await consultarStatusLicenca();
+        setStatusLicenca(status);
+      } catch (error) {
+        console.error("Erro ao consultar status da licença:", error);
+      }
+    }
+
+    carregarStatusLicenca();
+  }, []);
 
   useEffect(() => {
     async function carregarPermissoes() {
@@ -54,6 +138,52 @@ export default function MenuScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: "BlackBelt",
+          headerBackVisible: false,
+          headerStyle: {
+            backgroundColor: "#0A0A0A",
+          },
+          headerTintColor: "#FFFFFF",
+          headerTitleStyle: {
+            color: "#FFFFFF",
+            fontWeight: "800",
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={confirmarSaida}
+              accessibilityRole="button"
+              accessibilityLabel="Sair do sistema"
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 32,
+                  fontWeight: "700",
+                  color: "#FFFFFF",
+                }}
+              >
+                ←
+              </Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
+      {logoFundo ? (
+        <Image
+          source={{ uri: logoFundo }}
+          style={styles.logoFundo}
+          resizeMode="cover"
+          pointerEvents="none"
+        />
+      ) : null}
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -69,6 +199,45 @@ export default function MenuScreen() {
             <Text style={styles.subtitulo}>GESTÃO PARA ACADEMIAS</Text>
           </View>
         </View>
+
+        {statusLicenca && (
+          <View
+            style={[
+              styles.licencaCard,
+              statusLicenca.situacao === "LICENCIADA"
+                ? styles.licencaAtiva
+                : statusLicenca.situacao === "AVALIACAO"
+                  ? styles.licencaAvaliacao
+                  : styles.licencaExpirada,
+            ]}
+          >
+            <Text style={styles.licencaTitulo}>
+              {statusLicenca.situacao === "LICENCIADA"
+                ? "Licença comercial ativa"
+                : statusLicenca.situacao === "AVALIACAO"
+                  ? "Cópia de avaliação"
+                  : "Licença expirada"}
+            </Text>
+
+            {statusLicenca.dataExpiracao ? (
+              <Text style={styles.licencaTexto}>
+                Válida até{" "}
+                {new Date(
+                  `${statusLicenca.dataExpiracao}T12:00:00`,
+                ).toLocaleDateString("pt-BR")}
+              </Text>
+            ) : null}
+
+            {statusLicenca.situacao !== "EXPIRADA" ? (
+              <Text style={styles.licencaTexto}>
+                {statusLicenca.diasRestantes}{" "}
+                {statusLicenca.diasRestantes === 1
+                  ? "dia restante"
+                  : "dias restantes"}
+              </Text>
+            ) : null}
+          </View>
+        )}
 
         {/* TÍTULO */}
         <View style={styles.tituloContainer}>
@@ -132,6 +301,13 @@ export default function MenuScreen() {
         {/* CONTA */}
         <Text style={styles.secao}>CONTA</Text>
 
+        {pode("ACADEMIA_EDITAR") && (
+          <MenuItem
+            titulo="Dados da Academia"
+            onPress={() => router.push("/dados-academia")}
+          />
+        )}
+
         <MenuItem
           titulo="Alterar senha"
           onPress={() => router.push("/alterar-senha")}
@@ -178,6 +354,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#0A0A0A",
   },
 
+  logoFundo: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.35,
+  },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 55,
@@ -224,6 +408,43 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     letterSpacing: 2,
     marginTop: 5,
+  },
+
+  // LICENÇA
+
+  licencaCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 24,
+    gap: 5,
+  },
+
+  licencaAtiva: {
+    backgroundColor: "#102018",
+    borderColor: "#285B3B",
+  },
+
+  licencaAvaliacao: {
+    backgroundColor: "#211B0D",
+    borderColor: "#70551B",
+  },
+
+  licencaExpirada: {
+    backgroundColor: "#211315",
+    borderColor: "#472126",
+  },
+
+  licencaTitulo: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "800",
+  },
+
+  licencaTexto: {
+    color: "#CCCCCC",
+    fontSize: 13,
+    lineHeight: 19,
   },
 
   // TÍTULO

@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -49,43 +49,51 @@ export default function TiposCobrancaScreen() {
   );
 
   return (
-    <RotaPermissao permissao="TIPO_COBRANCA_LISTAR">
-      <View style={styles.container}>
-        <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Tipos de cobrança</Text>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Tipos de Cobrança",
+        }}
+      />
 
-          <Permissao permissao="TIPO_COBRANCA_CADASTRAR" esconder>
-            <Pressable
-              style={styles.botaoNovo}
-              onPress={() => router.push("/tipo-cobranca/novo")}
-            >
-              <Text style={styles.botaoNovoTexto}>+ Novo tipo</Text>
-            </Pressable>
-          </Permissao>
+      <RotaPermissao permissao="TIPO_COBRANCA_LISTAR">
+        <View style={styles.container}>
+          <View style={styles.cabecalho}>
+            <Text style={styles.titulo}>Tipos de cobrança</Text>
+
+            <Permissao permissao="TIPO_COBRANCA_CADASTRAR" esconder>
+              <Pressable
+                style={styles.botaoNovo}
+                onPress={() => router.push("/tipo-cobranca/novo")}
+              >
+                <Text style={styles.botaoNovoTexto}>+ Novo tipo</Text>
+              </Pressable>
+            </Permissao>
+          </View>
+
+          {mensagem ? (
+            <Text style={styles.mensagem}>{mensagem}</Text>
+          ) : carregando && tiposCobranca.length === 0 ? (
+            <ActivityIndicator style={styles.carregando} color="#C1121F" />
+          ) : (
+            <FlatList
+              data={tiposCobranca}
+              keyExtractor={(tipo) => tipo.id.toString()}
+              renderItem={({ item }) => (
+                <TipoCobrancaCard
+                  nome={item.nome}
+                  descricao={item.descricao}
+                  valorUnitario={item.valorUnitario}
+                  ativo={item.ativo}
+                  onPress={() => router.push(`/tipo-cobranca/${item.id}`)}
+                />
+              )}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
         </View>
-
-        {mensagem ? (
-          <Text style={styles.mensagem}>{mensagem}</Text>
-        ) : carregando && tiposCobranca.length === 0 ? (
-          <ActivityIndicator style={styles.carregando} color="#C1121F" />
-        ) : (
-          <FlatList
-            data={tiposCobranca}
-            keyExtractor={(tipo) => tipo.id.toString()}
-            renderItem={({ item }) => (
-              <TipoCobrancaCard
-                nome={item.nome}
-                descricao={item.descricao}
-                valorUnitario={item.valorUnitario}
-                ativo={item.ativo}
-                onPress={() => router.push(`/tipo-cobranca/${item.id}`)}
-              />
-            )}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
-    </RotaPermissao>
+      </RotaPermissao>
+    </>
   );
 }
 

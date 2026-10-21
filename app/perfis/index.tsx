@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -59,12 +59,7 @@ export default function PerfisScreen() {
 
       const proximaPagina = paginaAtual + 1;
 
-      const resposta = await listarPerfisPaginado(
-        proximaPagina,
-        10,
-        sort,
-        direction,
-      );
+      const resposta = await listarPerfis(proximaPagina, 10, sort, direction);
 
       setPerfis((perfisAtuais) => [...perfisAtuais, ...resposta.content]);
 
@@ -97,131 +92,141 @@ export default function PerfisScreen() {
   );
 
   return (
-    <RotaPermissao permissao="PERFIL_LISTAR">
-      <View style={styles.container}>
-        <View style={styles.cabecalho}>
-          <View>
-            <Text style={styles.titulo}>Perfis</Text>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Perfis",
+        }}
+      />
 
-            <Text style={styles.subtitulo}>
-              Gerencie os perfis e suas permissões
-            </Text>
+      <RotaPermissao permissao="PERFIL_LISTAR">
+        <View style={styles.container}>
+          <View style={styles.cabecalho}>
+            <View>
+              <Text style={styles.titulo}>Perfis</Text>
+
+              <Text style={styles.subtitulo}>
+                Gerencie os perfis e suas permissões
+              </Text>
+            </View>
+
+            <Permissao permissao="PERFIL_CRIAR" esconder>
+              <Pressable
+                style={styles.botaoNovo}
+                onPress={() => router.push("/perfis/novo")}
+              >
+                <Text style={styles.botaoNovoTexto}>+ Novo</Text>
+              </Pressable>
+            </Permissao>
           </View>
 
-          <Permissao permissao="PERFIL_CRIAR" esconder>
+          <View style={styles.ordenacao}>
             <Pressable
-              style={styles.botaoNovo}
-              onPress={() => router.push("/perfis/novo")}
-            >
-              <Text style={styles.botaoNovoTexto}>+ Novo</Text>
-            </Pressable>
-          </Permissao>
-        </View>
-
-        <View style={styles.ordenacao}>
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "nome" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("nome")}
-          >
-            <Text
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "nome" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "nome" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("nome")}
             >
-              Nome {sort === "nome" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
-        </View>
-
-        {mensagem ? (
-          <View style={styles.erroContainer}>
-            <Text style={styles.erroTitulo}>Ops!</Text>
-
-            <Text style={styles.mensagem}>{mensagem}</Text>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "nome" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                Nome {sort === "nome" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
           </View>
-        ) : (
-          <FlatList
-            data={perfis}
-            keyExtractor={(perfil) => perfil.id.toString()}
-            renderItem={({ item }) => {
-              const quantidadePermissoes = item.permissoes?.length ?? 0;
 
-              return (
-                <Pressable
-                  style={styles.card}
-                  onPress={() => router.push(`/perfis/${item.id}`)}
-                >
-                  <View style={styles.cardCabecalho}>
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarTexto}>
-                        {item.nome?.charAt(0).toUpperCase()}
-                      </Text>
+          {mensagem ? (
+            <View style={styles.erroContainer}>
+              <Text style={styles.erroTitulo}>Ops!</Text>
+
+              <Text style={styles.mensagem}>{mensagem}</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={perfis}
+              keyExtractor={(perfil) => perfil.id.toString()}
+              renderItem={({ item }) => {
+                const quantidadePermissoes = item.permissoes?.length ?? 0;
+
+                return (
+                  <Pressable
+                    style={styles.card}
+                    onPress={() => router.push(`/perfis/${item.id}`)}
+                  >
+                    <View style={styles.cardCabecalho}>
+                      <View style={styles.avatar}>
+                        <Text style={styles.avatarTexto}>
+                          {item.nome?.charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+
+                      <View style={styles.info}>
+                        <Text style={styles.nome} numberOfLines={1}>
+                          {item.nome}
+                        </Text>
+
+                        <Text style={styles.identificacao}>
+                          Perfil de acesso
+                        </Text>
+                      </View>
+
+                      <Text style={styles.seta}>›</Text>
                     </View>
 
-                    <View style={styles.info}>
-                      <Text style={styles.nome} numberOfLines={1}>
-                        {item.nome}
-                      </Text>
+                    <View style={styles.divisor} />
 
-                      <Text style={styles.identificacao}>Perfil de acesso</Text>
+                    <View style={styles.rodapeCard}>
+                      <View style={styles.permissoesBadge}>
+                        <Text style={styles.permissoesIcone}>🛡️</Text>
+
+                        <Text style={styles.permissoesTexto}>
+                          {quantidadePermissoes}{" "}
+                          {quantidadePermissoes === 1
+                            ? "permissão"
+                            : "permissões"}
+                        </Text>
+                      </View>
                     </View>
+                  </Pressable>
+                );
+              }}
+              onEndReached={carregarProximaPagina}
+              onEndReachedThreshold={0.5}
+              ListEmptyComponent={
+                !carregando ? (
+                  <View style={styles.vazioContainer}>
+                    <Text style={styles.vazioIcone}>🔐</Text>
 
-                    <Text style={styles.seta}>›</Text>
+                    <Text style={styles.vazioTitulo}>
+                      Nenhum perfil encontrado
+                    </Text>
+
+                    <Text style={styles.vazio}>
+                      Cadastre um perfil para começar.
+                    </Text>
                   </View>
-
-                  <View style={styles.divisor} />
-
-                  <View style={styles.rodapeCard}>
-                    <View style={styles.permissoesBadge}>
-                      <Text style={styles.permissoesIcone}>🛡️</Text>
-
-                      <Text style={styles.permissoesTexto}>
-                        {quantidadePermissoes}{" "}
-                        {quantidadePermissoes === 1
-                          ? "permissão"
-                          : "permissões"}
-                      </Text>
-                    </View>
-                  </View>
-                </Pressable>
-              );
-            }}
-            onEndReached={carregarProximaPagina}
-            onEndReachedThreshold={0.5}
-            ListEmptyComponent={
-              !carregando ? (
-                <View style={styles.vazioContainer}>
-                  <Text style={styles.vazioIcone}>🔐</Text>
-
-                  <Text style={styles.vazioTitulo}>
-                    Nenhum perfil encontrado
-                  </Text>
-
-                  <Text style={styles.vazio}>
-                    Cadastre um perfil para começar.
-                  </Text>
-                </View>
-              ) : null
-            }
-            ListFooterComponent={
-              carregando ? (
-                <ActivityIndicator
-                  size="small"
-                  color="#C1121F"
-                  style={styles.carregando}
-                />
-              ) : null
-            }
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.lista}
-          />
-        )}
-      </View>
-    </RotaPermissao>
+                ) : null
+              }
+              ListFooterComponent={
+                carregando ? (
+                  <ActivityIndicator
+                    size="small"
+                    color="#C1121F"
+                    style={styles.carregando}
+                  />
+                ) : null
+              }
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.lista}
+            />
+          )}
+        </View>
+      </RotaPermissao>
+    </>
   );
 }
 

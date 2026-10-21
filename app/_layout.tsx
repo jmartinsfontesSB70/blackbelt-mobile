@@ -16,11 +16,31 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+        <Stack.Screen
+          name="menu"
+          options={{
+            title: "BlackBelt",
+            headerBackVisible: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="financeiro/index"
+          options={{
+            title: "Financeiro",
+          }}
+        />
+
         <Stack.Screen
           name="modal"
-          options={{ presentation: "modal", title: "Modal" }}
+          options={{
+            presentation: "modal",
+            title: "Modal",
+          }}
         />
       </Stack>
+
       <StatusBar style="auto" />
     </ThemeProvider>
   );

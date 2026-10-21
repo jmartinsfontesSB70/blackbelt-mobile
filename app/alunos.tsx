@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -169,101 +169,111 @@ export default function AlunosScreen() {
   }
 
   return (
-    <RotaPermissao permissao="ALUNO_LISTAR">
-      <View style={styles.container}>
-        <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Alunos</Text>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Alunos",
+        }}
+      />
+      <RotaPermissao permissao="ALUNO_LISTAR">
+        <View style={styles.container}>
+          <View style={styles.cabecalho}>
+            <Text style={styles.titulo}>Alunos</Text>
 
-          <Permissao permissao="ALUNO_CRIAR" esconder>
-            <Pressable
-              style={styles.botaoNovo}
-              onPress={() => router.push("/aluno/novo")}
-            >
-              <Text style={styles.botaoNovoTexto}>+ Novo aluno</Text>
+            <Permissao permissao="ALUNO_CRIAR" esconder>
+              <Pressable
+                style={styles.botaoNovo}
+                onPress={() => router.push("/aluno/novo")}
+              >
+                <Text style={styles.botaoNovoTexto}>+ Novo aluno</Text>
+              </Pressable>
+            </Permissao>
+          </View>
+
+          <View style={styles.pesquisaContainer}>
+            <TextInput
+              style={styles.inputPesquisa}
+              placeholder="Pesquisar aluno..."
+              placeholderTextColor="#888888"
+              value={textoPesquisa}
+              onChangeText={setTextoPesquisa}
+              onSubmitEditing={executarPesquisa}
+              returnKeyType="search"
+            />
+
+            <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
+              <Text style={styles.botaoPesquisaTexto}>🔎</Text>
             </Pressable>
-          </Permissao>
-        </View>
+          </View>
 
-        <View style={styles.pesquisaContainer}>
-          <TextInput
-            style={styles.inputPesquisa}
-            placeholder="Pesquisar aluno..."
-            placeholderTextColor="#888888"
-            value={textoPesquisa}
-            onChangeText={setTextoPesquisa}
-            onSubmitEditing={executarPesquisa}
-            returnKeyType="search"
-          />
+          <View style={styles.ordenacaoContainer}>
+            <Text style={styles.ordenacaoTexto}>Ordenar por:</Text>
 
-          <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
-            <Text style={styles.botaoPesquisaTexto}>🔎</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.ordenacaoContainer}>
-          <Text style={styles.ordenacaoTexto}>Ordenar por:</Text>
-
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "nome" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("nome")}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "nome" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "nome" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("nome")}
             >
-              Nome {sort === "nome" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "nome" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                Nome {sort === "nome" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
 
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "id" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("id")}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "id" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("id")}
             >
-              ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
-        </View>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
+          </View>
 
-        {mensagem ? (
-          <Text style={styles.mensagem}>{mensagem}</Text>
-        ) : (
-          <FlatList
-            data={alunos}
-            keyExtractor={(aluno) => aluno.id.toString()}
-            renderItem={({ item }) => (
-              <AlunoCard
-                nome={item.nome}
-                cpf={item.cpf ? formatarCpf(item.cpf) : ""}
-                fotoUri={fotos[item.id.toString()]}
-                onPress={() => router.push(`/aluno/${item.id}`)}
-              />
-            )}
-            onEndReached={carregarProximaPagina}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              carregando ? (
-                <ActivityIndicator style={styles.carregando} color="#C1121F" />
-              ) : null
-            }
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
-    </RotaPermissao>
+          {mensagem ? (
+            <Text style={styles.mensagem}>{mensagem}</Text>
+          ) : (
+            <FlatList
+              data={alunos}
+              keyExtractor={(aluno) => aluno.id.toString()}
+              renderItem={({ item }) => (
+                <AlunoCard
+                  nome={item.nome}
+                  cpf={item.cpf ? formatarCpf(item.cpf) : ""}
+                  fotoUri={fotos[item.id.toString()]}
+                  onPress={() => router.push(`/aluno/${item.id}`)}
+                />
+              )}
+              onEndReached={carregarProximaPagina}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                carregando ? (
+                  <ActivityIndicator
+                    style={styles.carregando}
+                    color="#C1121F"
+                  />
+                ) : null
+              }
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+      </RotaPermissao>
+    </>
   );
 }
 

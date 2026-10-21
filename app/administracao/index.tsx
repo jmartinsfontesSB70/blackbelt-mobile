@@ -1,10 +1,53 @@
-import { Stack, useRouter } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { Image, StyleSheet, Text, View } from "react-native";
 
 import MenuItem from "@/components/MenuItem";
+import { buscarLogoAcademia } from "@/services/academiaService";
+
+function arrayBufferParaBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binario = "";
+
+  for (let i = 0; i < bytes.length; i += 8192) {
+    binario += String.fromCharCode(
+      ...bytes.subarray(i, Math.min(i + 8192, bytes.length)),
+    );
+  }
+
+  return btoa(binario);
+}
 
 export default function AdministracaoScreen() {
   const router = useRouter();
+  const [logoFundo, setLogoFundo] = useState<string | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      let ativo = true;
+
+      async function carregarLogo() {
+        try {
+          const buffer = await buscarLogoAcademia();
+          const base64 = arrayBufferParaBase64(buffer);
+
+          if (ativo) {
+            setLogoFundo(`data:image/jpeg;base64,${base64}`);
+          }
+        } catch {
+          if (ativo) {
+            setLogoFundo(null);
+          }
+        }
+      }
+
+      carregarLogo();
+
+      return () => {
+        ativo = false;
+      };
+    }, []),
+  );
 
   return (
     <View style={styles.container}>
@@ -13,6 +56,15 @@ export default function AdministracaoScreen() {
           title: "Administração",
         }}
       />
+
+      {logoFundo ? (
+        <Image
+          source={{ uri: logoFundo }}
+          style={styles.logoFundo}
+          resizeMode="cover"
+          pointerEvents="none"
+        />
+      ) : null}
 
       <Text style={styles.titulo}>Administração</Text>
 
@@ -41,6 +93,15 @@ const styles = StyleSheet.create({
     paddingTop: 70,
     paddingBottom: 35,
     backgroundColor: "#0A0A0A",
+  },
+
+  logoFundo: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.35,
   },
 
   titulo: {

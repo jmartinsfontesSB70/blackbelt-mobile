@@ -20,6 +20,8 @@ import {
   obterTokenBiometrico,
 } from "@/services/authService";
 
+import { verificarStatusInstalacao } from "@/services/academiaService";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
@@ -29,11 +31,38 @@ export default function HomeScreen() {
   const [entrando, setEntrando] = useState(false);
   const [temBiometria, setTemBiometria] = useState(false);
 
-  const router = useRouter();
+  const [verificandoInstalacao, setVerificandoInstalacao] = useState(true);
 
+  const router = useRouter();
+  /*
   useEffect(() => {
     verificarBiometriaDisponivel();
   }, []);
+*/
+  useEffect(() => {
+    async function iniciarAplicativo() {
+      try {
+        const status = await verificarStatusInstalacao();
+
+        if (!status.academiaCadastrada) {
+          router.replace("/instalacao");
+          return;
+        }
+
+        await verificarBiometriaDisponivel();
+      } catch (error) {
+        setMensagem(
+          error instanceof Error
+            ? error.message
+            : "Não foi possível verificar a instalação.",
+        );
+      } finally {
+        setVerificandoInstalacao(false);
+      }
+    }
+
+    iniciarAplicativo();
+  }, [router]);
 
   async function verificarBiometriaDisponivel() {
     try {
@@ -145,6 +174,19 @@ export default function HomeScreen() {
     router.push("/recuperacao-senha");
   }
 
+  if (verificandoInstalacao) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.carregamento}>
+          <ActivityIndicator size="large" color="#C1121F" />
+          <Text style={styles.textoCarregamento}>
+            Verificando instalação do BlackBelt...
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -253,6 +295,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0A0A0A",
+  },
+
+  carregamento: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+
+  textoCarregamento: {
+    color: "#CCCCCC",
+    fontSize: 14,
+    marginTop: 16,
+    textAlign: "center",
   },
 
   scrollContent: {

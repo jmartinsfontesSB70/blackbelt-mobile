@@ -28,6 +28,78 @@ type Perfil = {
   permissoes: Permissao[];
 };
 
+const TITULOS_GRUPOS: Record<string, string> = {
+  ALUNO: "Alunos",
+  PROFESSOR: "Professores",
+  MODALIDADE: "Modalidades",
+  TURMA: "Turmas",
+  MATRICULA: "Matrículas",
+  PRESENCA: "Presenças",
+  PERFIL: "Perfis",
+  USUARIO: "Usuários",
+  COBRANCA: "Cobranças",
+  TIPO_COBRANCA: "Tipos de cobrança",
+  PAGAMENTO: "Pagamentos",
+  ACADEMIA: "Academia",
+};
+
+const ORDEM_GRUPOS = [
+  "ALUNO",
+  "PROFESSOR",
+  "MODALIDADE",
+  "TURMA",
+  "MATRICULA",
+  "PRESENCA",
+  "PERFIL",
+  "USUARIO",
+  "COBRANCA",
+  "TIPO_COBRANCA",
+  "PAGAMENTO",
+  "ACADEMIA",
+];
+
+const ORDEM_ACOES = [
+  "LISTAR",
+  "CRIAR",
+  "CADASTRAR",
+  "EDITAR",
+  "CANCELAR",
+  "EXCLUIR",
+];
+
+const TITULOS_ACOES: Record<string, string> = {
+  LISTAR: "Listar",
+  CRIAR: "Criar",
+  CADASTRAR: "Cadastrar",
+  EDITAR: "Editar",
+  CANCELAR: "Cancelar",
+  EXCLUIR: "Excluir",
+};
+
+function obterGrupoPermissao(nome: string) {
+  if (nome.startsWith("TIPO_COBRANCA_")) {
+    return "TIPO_COBRANCA";
+  }
+
+  const separador = nome.indexOf("_");
+
+  if (separador === -1) {
+    return null;
+  }
+
+  return nome.substring(0, separador);
+}
+
+function obterAcaoPermissao(nome: string, grupo: string) {
+  const prefixo = `${grupo}_`;
+
+  if (!nome.startsWith(prefixo)) {
+    return nome;
+  }
+
+  return nome.substring(prefixo.length);
+}
+
 export default function EditarPerfilScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -104,7 +176,11 @@ export default function EditarPerfilScreen() {
     const grupos: Record<string, Permissao[]> = {};
 
     permissoes.forEach((permissao) => {
-      const [grupo] = permissao.nome.split("_");
+      const grupo = obterGrupoPermissao(permissao.nome);
+
+      if (!grupo) {
+        return;
+      }
 
       if (!grupos[grupo]) {
         grupos[grupo] = [];
@@ -113,7 +189,52 @@ export default function EditarPerfilScreen() {
       grupos[grupo].push(permissao);
     });
 
-    return Object.entries(grupos);
+    return Object.entries(grupos)
+      .sort(([grupoA], [grupoB]) => {
+        const indiceA = ORDEM_GRUPOS.indexOf(grupoA);
+        const indiceB = ORDEM_GRUPOS.indexOf(grupoB);
+
+        if (indiceA === -1 && indiceB === -1) {
+          return grupoA.localeCompare(grupoB);
+        }
+
+        if (indiceA === -1) {
+          return 1;
+        }
+
+        if (indiceB === -1) {
+          return -1;
+        }
+
+        return indiceA - indiceB;
+      })
+      .map(
+        ([grupo, grupoPermissoes]) =>
+          [
+            grupo,
+            [...grupoPermissoes].sort((a, b) => {
+              const acaoA = obterAcaoPermissao(a.nome, grupo);
+              const acaoB = obterAcaoPermissao(b.nome, grupo);
+
+              const indiceA = ORDEM_ACOES.indexOf(acaoA);
+              const indiceB = ORDEM_ACOES.indexOf(acaoB);
+
+              if (indiceA === -1 && indiceB === -1) {
+                return a.nome.localeCompare(b.nome);
+              }
+
+              if (indiceA === -1) {
+                return 1;
+              }
+
+              if (indiceB === -1) {
+                return -1;
+              }
+
+              return indiceA - indiceB;
+            }),
+          ] as [string, Permissao[]],
+      );
   }, [permissoes]);
 
   function grupoSelecionado(grupoPermissoes: Permissao[]) {
@@ -331,7 +452,9 @@ export default function EditarPerfilScreen() {
                           activeOpacity={0.7}
                         >
                           <View>
-                            <Text style={styles.grupoNome}>{grupo}</Text>
+                            <Text style={styles.grupoNome}>
+                              {TITULOS_GRUPOS[grupo] ?? grupo}
+                            </Text>
 
                             <Text style={styles.grupoDescricao}>
                               {
@@ -429,12 +552,15 @@ export default function EditarPerfilScreen() {
 }
 
 function formatarPermissao(nome: string) {
-  return nome
-    .split("_")
-    .slice(1)
-    .join(" ")
-    .toLowerCase()
-    .replace(/^\w/, (letra) => letra.toUpperCase());
+  const grupo = obterGrupoPermissao(nome);
+
+  if (!grupo) {
+    return nome;
+  }
+
+  const acao = obterAcaoPermissao(nome, grupo);
+
+  return TITULOS_ACOES[acao] ?? acao;
 }
 
 const styles = StyleSheet.create({

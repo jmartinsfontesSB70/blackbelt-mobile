@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -185,103 +185,116 @@ export default function ProfessoresScreen() {
   }
 
   return (
-    <RotaPermissao permissao="PROFESSOR_LISTAR">
-      <View style={styles.container}>
-        <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Professores</Text>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Professores",
+        }}
+      />
 
-          <Permissao permissao="PROFESSOR_CRIAR" esconder>
-            <Pressable
-              style={styles.botaoNovo}
-              onPress={() => router.push("/professor/novo")}
-            >
-              <Text style={styles.botaoNovoTexto}>+ Novo professor</Text>
+      <RotaPermissao permissao="PROFESSOR_LISTAR">
+        <View style={styles.container}>
+          <View style={styles.cabecalho}>
+            <Text style={styles.titulo}>Professores</Text>
+
+            <Permissao permissao="PROFESSOR_CRIAR" esconder>
+              <Pressable
+                style={styles.botaoNovo}
+                onPress={() => router.push("/professor/novo")}
+              >
+                <Text style={styles.botaoNovoTexto}>+ Novo professor</Text>
+              </Pressable>
+            </Permissao>
+          </View>
+
+          <View style={styles.pesquisaContainer}>
+            <TextInput
+              style={styles.inputPesquisa}
+              placeholder="Pesquisar professor..."
+              placeholderTextColor="#888888"
+              value={textoPesquisa}
+              onChangeText={setTextoPesquisa}
+              onSubmitEditing={executarPesquisa}
+              returnKeyType="search"
+            />
+
+            <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
+              <Text style={styles.botaoPesquisaTexto}>🔎</Text>
             </Pressable>
-          </Permissao>
-        </View>
+          </View>
 
-        <View style={styles.pesquisaContainer}>
-          <TextInput
-            style={styles.inputPesquisa}
-            placeholder="Pesquisar professor..."
-            placeholderTextColor="#888888"
-            value={textoPesquisa}
-            onChangeText={setTextoPesquisa}
-            onSubmitEditing={executarPesquisa}
-            returnKeyType="search"
-          />
+          <View style={styles.ordenacaoContainer}>
+            <Text style={styles.ordenacaoTexto}>Ordenar por:</Text>
 
-          <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
-            <Text style={styles.botaoPesquisaTexto}>🔎</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.ordenacaoContainer}>
-          <Text style={styles.ordenacaoTexto}>Ordenar por:</Text>
-
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "nome" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("nome")}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "nome" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "nome" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("nome")}
             >
-              Nome {sort === "nome" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "nome" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                Nome {sort === "nome" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
 
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "id" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("id")}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "id" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("id")}
             >
-              ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
-        </View>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
+          </View>
 
-        {mensagem ? (
-          <Text style={styles.mensagem}>{mensagem}</Text>
-        ) : (
-          <FlatList
-            data={professores}
-            keyExtractor={(professor) => professor.id.toString()}
-            renderItem={({ item }) => (
-              <ProfessorCard
-                nome={item.nome}
-                cpf={item.cpf ? formatarCpf(item.cpf) : ""}
-                telefone={item.telefone ? formatarTelefone(item.telefone) : ""}
-                ativo={item.ativo}
-                fotoUri={fotos[item.id.toString()]}
-                onPress={() => router.push(`/professor/${item.id}`)}
-              />
-            )}
-            onEndReached={carregarProximaPagina}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              carregando ? (
-                <ActivityIndicator style={styles.carregando} color="#C1121F" />
-              ) : null
-            }
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
-    </RotaPermissao>
+          {mensagem ? (
+            <Text style={styles.mensagem}>{mensagem}</Text>
+          ) : (
+            <FlatList
+              data={professores}
+              keyExtractor={(professor) => professor.id.toString()}
+              renderItem={({ item }) => (
+                <ProfessorCard
+                  nome={item.nome}
+                  cpf={item.cpf ? formatarCpf(item.cpf) : ""}
+                  telefone={
+                    item.telefone ? formatarTelefone(item.telefone) : ""
+                  }
+                  ativo={item.ativo}
+                  fotoUri={fotos[item.id.toString()]}
+                  onPress={() => router.push(`/professor/${item.id}`)}
+                />
+              )}
+              onEndReached={carregarProximaPagina}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                carregando ? (
+                  <ActivityIndicator
+                    style={styles.carregando}
+                    color="#C1121F"
+                  />
+                ) : null
+              }
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+      </RotaPermissao>
+    </>
   );
 }
 

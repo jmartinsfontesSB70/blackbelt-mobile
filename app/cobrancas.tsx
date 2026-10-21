@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -116,111 +116,122 @@ export default function CobrancasScreen() {
   }
 
   return (
-    <RotaPermissao permissao="COBRANCA_LISTAR">
-      <View style={styles.container}>
-        <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Cobranças</Text>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Cobranças",
+        }}
+      />
 
-          <Permissao permissao="COBRANCA_CADASTRAR" esconder>
-            <Pressable
-              style={styles.botaoNovo}
-              onPress={() => router.push("/cobranca/novo")}
-            >
-              <Text style={styles.botaoNovoTexto}>+ Nova cobrança</Text>
+      <RotaPermissao permissao="COBRANCA_LISTAR">
+        <View style={styles.container}>
+          <View style={styles.cabecalho}>
+            <Text style={styles.titulo}>Cobranças</Text>
+
+            <Permissao permissao="COBRANCA_CADASTRAR" esconder>
+              <Pressable
+                style={styles.botaoNovo}
+                onPress={() => router.push("/cobranca/novo")}
+              >
+                <Text style={styles.botaoNovoTexto}>+ Nova cobrança</Text>
+              </Pressable>
+            </Permissao>
+          </View>
+
+          <View style={styles.pesquisaContainer}>
+            <TextInput
+              style={styles.inputPesquisa}
+              placeholder="Pesquisar aluno ou descrição..."
+              placeholderTextColor="#888888"
+              value={textoPesquisa}
+              onChangeText={setTextoPesquisa}
+              onSubmitEditing={executarPesquisa}
+              returnKeyType="search"
+            />
+
+            <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
+              <Text style={styles.botaoPesquisaTexto}>🔎</Text>
             </Pressable>
-          </Permissao>
-        </View>
+          </View>
 
-        <View style={styles.pesquisaContainer}>
-          <TextInput
-            style={styles.inputPesquisa}
-            placeholder="Pesquisar aluno ou descrição..."
-            placeholderTextColor="#888888"
-            value={textoPesquisa}
-            onChangeText={setTextoPesquisa}
-            onSubmitEditing={executarPesquisa}
-            returnKeyType="search"
-          />
+          <View style={styles.ordenacaoContainer}>
+            <Text style={styles.ordenacaoTexto}>Ordenar por:</Text>
 
-          <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
-            <Text style={styles.botaoPesquisaTexto}>🔎</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.ordenacaoContainer}>
-          <Text style={styles.ordenacaoTexto}>Ordenar por:</Text>
-
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "dataVencimento" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("dataVencimento")}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "dataVencimento" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "dataVencimento" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("dataVencimento")}
             >
-              Vencimento{" "}
-              {sort === "dataVencimento"
-                ? direction === "asc"
-                  ? "↑"
-                  : "↓"
-                : ""}
-            </Text>
-          </Pressable>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "dataVencimento" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                Vencimento{" "}
+                {sort === "dataVencimento"
+                  ? direction === "asc"
+                    ? "↑"
+                    : "↓"
+                  : ""}
+              </Text>
+            </Pressable>
 
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "id" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("id")}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                styles.botaoOrdenacao,
+                sort === "id" && styles.botaoOrdenacaoAtivo,
               ]}
+              onPress={() => ordenarPor("id")}
             >
-              ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
-        </View>
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
+          </View>
 
-        {mensagem ? (
-          <Text style={styles.mensagem}>{mensagem}</Text>
-        ) : carregando && cobrancas.length === 0 ? (
-          <ActivityIndicator style={styles.carregando} color="#C1121F" />
-        ) : (
-          <FlatList
-            data={cobrancas}
-            keyExtractor={(cobranca) => cobranca.id.toString()}
-            renderItem={({ item }) => (
-              <CobrancaCard
-                alunoNome={item.alunoNome}
-                tipoCobrancaNome={item.tipoCobrancaNome}
-                descricao={item.descricao}
-                dataVencimento={item.dataVencimento}
-                valor={item.valor}
-                status={item.status}
-                onPress={() => router.push(`/cobranca/${item.id}`)}
-              />
-            )}
-            onEndReached={carregarProximaPagina}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              carregando ? (
-                <ActivityIndicator style={styles.carregando} color="#C1121F" />
-              ) : null
-            }
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
-    </RotaPermissao>
+          {mensagem ? (
+            <Text style={styles.mensagem}>{mensagem}</Text>
+          ) : carregando && cobrancas.length === 0 ? (
+            <ActivityIndicator style={styles.carregando} color="#C1121F" />
+          ) : (
+            <FlatList
+              data={cobrancas}
+              keyExtractor={(cobranca) => cobranca.id.toString()}
+              renderItem={({ item }) => (
+                <CobrancaCard
+                  alunoNome={item.alunoNome}
+                  tipoCobrancaNome={item.tipoCobrancaNome}
+                  descricao={item.descricao}
+                  dataVencimento={item.dataVencimento}
+                  valor={item.valor}
+                  status={item.status}
+                  onPress={() => router.push(`/cobranca/${item.id}`)}
+                />
+              )}
+              onEndReached={carregarProximaPagina}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                carregando ? (
+                  <ActivityIndicator
+                    style={styles.carregando}
+                    color="#C1121F"
+                  />
+                ) : null
+              }
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+      </RotaPermissao>
+    </>
   );
 }
 

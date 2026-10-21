@@ -14,17 +14,34 @@ export default function RotaPermissao({ permissao, children }: Props) {
   const [autorizado, setAutorizado] = useState(false);
 
   useEffect(() => {
+    let ativo = true;
+
     async function verificar() {
       try {
         const permitido = await temPermissao(permissao);
 
-        setAutorizado(permitido);
+        if (ativo) {
+          setAutorizado(permitido);
+        }
+      } catch (error) {
+        console.error("Erro ao verificar permissão:", error);
+
+        if (ativo) {
+          setAutorizado(false);
+        }
       } finally {
-        setVerificando(false);
+        if (ativo) {
+          setVerificando(false);
+        }
       }
     }
 
+    setVerificando(true);
     verificar();
+
+    return () => {
+      ativo = false;
+    };
   }, [permissao]);
 
   if (verificando) {

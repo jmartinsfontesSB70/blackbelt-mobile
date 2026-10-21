@@ -38,6 +38,10 @@ const ORDEM_GRUPOS = [
   "PRESENCA",
   "PERFIL",
   "USUARIO",
+  "COBRANCA",
+  "TIPO_COBRANCA",
+  "PAGAMENTO",
+  "ACADEMIA",
 ];
 
 const TITULOS_GRUPOS: Record<string, string> = {
@@ -49,16 +53,53 @@ const TITULOS_GRUPOS: Record<string, string> = {
   PRESENCA: "Presenças",
   PERFIL: "Perfis",
   USUARIO: "Usuários",
+  COBRANCA: "Cobranças",
+  TIPO_COBRANCA: "Tipos de cobrança",
+  PAGAMENTO: "Pagamentos",
+  ACADEMIA: "Academia",
 };
 
-const ORDEM_ACOES = ["LISTAR", "CRIAR", "EDITAR", "EXCLUIR"];
+const ORDEM_ACOES = [
+  "LISTAR",
+  "CRIAR",
+  "CADASTRAR",
+  "EDITAR",
+  "CANCELAR",
+  "EXCLUIR",
+];
 
 const TITULOS_ACOES: Record<string, string> = {
   LISTAR: "Listar",
   CRIAR: "Criar",
+  CADASTRAR: "Cadastrar",
   EDITAR: "Editar",
+  CANCELAR: "Cancelar",
   EXCLUIR: "Excluir",
 };
+
+function obterGrupoPermissao(nome: string) {
+  if (nome.startsWith("TIPO_COBRANCA_")) {
+    return "TIPO_COBRANCA";
+  }
+
+  const separador = nome.indexOf("_");
+
+  if (separador === -1) {
+    return null;
+  }
+
+  return nome.substring(0, separador);
+}
+
+function obterAcaoPermissao(nome: string, grupo: string) {
+  const prefixo = `${grupo}_`;
+
+  if (!nome.startsWith(prefixo)) {
+    return nome;
+  }
+
+  return nome.substring(prefixo.length);
+}
 
 export default function NovoPerfilScreen() {
   const router = useRouter();
@@ -98,13 +139,11 @@ export default function NovoPerfilScreen() {
     const mapa = new Map<string, Permissao[]>();
 
     permissoes.forEach((permissao) => {
-      const separador = permissao.nome.indexOf("_");
+      const grupo = obterGrupoPermissao(permissao.nome);
 
-      if (separador === -1) {
+      if (!grupo) {
         return;
       }
-
-      const grupo = permissao.nome.substring(0, separador);
 
       if (!mapa.has(grupo)) {
         mapa.set(grupo, []);
@@ -136,8 +175,8 @@ export default function NovoPerfilScreen() {
         chave,
         titulo: TITULOS_GRUPOS[chave] ?? chave,
         permissoes: permissoesGrupo.sort((a, b) => {
-          const acaoA = a.nome.substring(a.nome.indexOf("_") + 1);
-          const acaoB = b.nome.substring(b.nome.indexOf("_") + 1);
+          const acaoA = obterAcaoPermissao(a.nome, chave);
+          const acaoB = obterAcaoPermissao(b.nome, chave);
 
           const indiceA = ORDEM_ACOES.indexOf(acaoA);
           const indiceB = ORDEM_ACOES.indexOf(acaoB);
@@ -221,13 +260,13 @@ export default function NovoPerfilScreen() {
   }
 
   function nomeAcao(permissao: Permissao) {
-    const separador = permissao.nome.indexOf("_");
+    const grupo = obterGrupoPermissao(permissao.nome);
 
-    if (separador === -1) {
+    if (!grupo) {
       return permissao.nome;
     }
 
-    const acao = permissao.nome.substring(separador + 1);
+    const acao = obterAcaoPermissao(permissao.nome, grupo);
 
     return TITULOS_ACOES[acao] ?? acao;
   }

@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -106,164 +106,178 @@ export default function UsuariosScreen() {
   );
 
   return (
-    <RotaPermissao permissao="USUARIO_LISTAR">
-      <View style={styles.container}>
-        <View style={styles.cabecalho}>
-          <Text style={styles.titulo}>Usuários</Text>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Usuários",
+        }}
+      />
 
-          <Permissao permissao="USUARIO_CRIAR" esconder>
-            <Pressable
-              style={styles.botaoNovo}
-              onPress={() => router.push("/usuarios/novo")}
-            >
-              <Text style={styles.botaoNovoTexto}>+ Novo usuário</Text>
-            </Pressable>
-          </Permissao>
-        </View>
+      <RotaPermissao permissao="USUARIO_LISTAR">
+        <View style={styles.container}>
+          <View style={styles.cabecalho}>
+            <Text style={styles.titulo}>Usuários</Text>
 
-        <View style={styles.pesquisaContainer}>
-          <TextInput
-            style={styles.inputPesquisa}
-            placeholder="Pesquisar usuário, e-mail ou perfil..."
-            placeholderTextColor="#888888"
-            value={textoPesquisa}
-            onChangeText={setTextoPesquisa}
-            onSubmitEditing={executarPesquisa}
-            returnKeyType="search"
-          />
-
-          <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
-            <Text style={styles.botaoPesquisaTexto}>🔎</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.ordenacao}>
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "username" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("username")}
-          >
-            <Text
-              style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "username" && styles.botaoOrdenacaoTextoAtivo,
-              ]}
-            >
-              Usuário{" "}
-              {sort === "username" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "email" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("email")}
-          >
-            <Text
-              style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "email" && styles.botaoOrdenacaoTextoAtivo,
-              ]}
-            >
-              E-mail {sort === "email" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.botaoOrdenacao,
-              sort === "id" && styles.botaoOrdenacaoAtivo,
-            ]}
-            onPress={() => ordenarPor("id")}
-          >
-            <Text
-              style={[
-                styles.botaoOrdenacaoTexto,
-                sort === "id" && styles.botaoOrdenacaoTextoAtivo,
-              ]}
-            >
-              ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
-            </Text>
-          </Pressable>
-        </View>
-
-        {mensagem ? (
-          <Text style={styles.mensagem}>{mensagem}</Text>
-        ) : (
-          <FlatList
-            data={usuarios}
-            keyExtractor={(usuario) => usuario.id.toString()}
-            renderItem={({ item }) => (
+            <Permissao permissao="USUARIO_CRIAR" esconder>
               <Pressable
-                style={styles.card}
-                onPress={() => router.push(`/usuarios/${item.id}`)}
+                style={styles.botaoNovo}
+                onPress={() => router.push("/usuarios/novo")}
               >
-                <View style={styles.cardCabecalho}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarTexto}>
-                      {item.username?.charAt(0).toUpperCase()}
-                    </Text>
-                  </View>
+                <Text style={styles.botaoNovoTexto}>+ Novo usuário</Text>
+              </Pressable>
+            </Permissao>
+          </View>
 
-                  <View style={styles.cardCabecalhoInfo}>
-                    <Text style={styles.username}>{item.username}</Text>
+          <View style={styles.pesquisaContainer}>
+            <TextInput
+              style={styles.inputPesquisa}
+              placeholder="Pesquisar usuário, e-mail ou perfil..."
+              placeholderTextColor="#888888"
+              value={textoPesquisa}
+              onChangeText={setTextoPesquisa}
+              onSubmitEditing={executarPesquisa}
+              returnKeyType="search"
+            />
 
-                    <Text style={styles.email}>
-                      {item.email || "E-mail não informado"}
-                    </Text>
+            <Pressable style={styles.botaoPesquisa} onPress={executarPesquisa}>
+              <Text style={styles.botaoPesquisaTexto}>🔎</Text>
+            </Pressable>
+          </View>
 
-                    <View
-                      style={[
-                        styles.status,
-                        item.ativo ? styles.statusAtivo : styles.statusInativo,
-                      ]}
-                    >
-                      <Text
+          <View style={styles.ordenacao}>
+            <Pressable
+              style={[
+                styles.botaoOrdenacao,
+                sort === "username" && styles.botaoOrdenacaoAtivo,
+              ]}
+              onPress={() => ordenarPor("username")}
+            >
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "username" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                Usuário{" "}
+                {sort === "username" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={[
+                styles.botaoOrdenacao,
+                sort === "email" && styles.botaoOrdenacaoAtivo,
+              ]}
+              onPress={() => ordenarPor("email")}
+            >
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "email" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                E-mail{" "}
+                {sort === "email" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={[
+                styles.botaoOrdenacao,
+                sort === "id" && styles.botaoOrdenacaoAtivo,
+              ]}
+              onPress={() => ordenarPor("id")}
+            >
+              <Text
+                style={[
+                  styles.botaoOrdenacaoTexto,
+                  sort === "id" && styles.botaoOrdenacaoTextoAtivo,
+                ]}
+              >
+                ID {sort === "id" ? (direction === "asc" ? "↑" : "↓") : ""}
+              </Text>
+            </Pressable>
+          </View>
+
+          {mensagem ? (
+            <Text style={styles.mensagem}>{mensagem}</Text>
+          ) : (
+            <FlatList
+              data={usuarios}
+              keyExtractor={(usuario) => usuario.id.toString()}
+              renderItem={({ item }) => (
+                <Pressable
+                  style={styles.card}
+                  onPress={() => router.push(`/usuarios/${item.id}`)}
+                >
+                  <View style={styles.cardCabecalho}>
+                    <View style={styles.avatar}>
+                      <Text style={styles.avatarTexto}>
+                        {item.username?.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+
+                    <View style={styles.cardCabecalhoInfo}>
+                      <Text style={styles.username}>{item.username}</Text>
+
+                      <Text style={styles.email}>
+                        {item.email || "E-mail não informado"}
+                      </Text>
+
+                      <View
                         style={[
-                          styles.statusTexto,
+                          styles.status,
                           item.ativo
-                            ? styles.statusTextoAtivo
-                            : styles.statusTextoInativo,
+                            ? styles.statusAtivo
+                            : styles.statusInativo,
                         ]}
                       >
-                        {item.ativo ? "ATIVO" : "INATIVO"}
+                        <Text
+                          style={[
+                            styles.statusTexto,
+                            item.ativo
+                              ? styles.statusTextoAtivo
+                              : styles.statusTextoInativo,
+                          ]}
+                        >
+                          {item.ativo ? "ATIVO" : "INATIVO"}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  <View style={styles.dados}>
+                    <View style={styles.campo}>
+                      <Text style={styles.label}>Perfil</Text>
+
+                      <Text style={styles.valor}>
+                        {item.perfilNome || "Não informado"}
                       </Text>
                     </View>
                   </View>
-                </View>
-
-                <View style={styles.dados}>
-                  <View style={styles.campo}>
-                    <Text style={styles.label}>Perfil</Text>
-
-                    <Text style={styles.valor}>
-                      {item.perfilNome || "Não informado"}
-                    </Text>
-                  </View>
-                </View>
-              </Pressable>
-            )}
-            onEndReached={carregarProximaPagina}
-            onEndReachedThreshold={0.5}
-            ListEmptyComponent={
-              !carregando ? (
-                <Text style={styles.vazio}>Nenhum usuário encontrado.</Text>
-              ) : null
-            }
-            ListFooterComponent={
-              carregando ? (
-                <ActivityIndicator color="#C1121F" style={styles.carregando} />
-              ) : null
-            }
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
-    </RotaPermissao>
+                </Pressable>
+              )}
+              onEndReached={carregarProximaPagina}
+              onEndReachedThreshold={0.5}
+              ListEmptyComponent={
+                !carregando ? (
+                  <Text style={styles.vazio}>Nenhum usuário encontrado.</Text>
+                ) : null
+              }
+              ListFooterComponent={
+                carregando ? (
+                  <ActivityIndicator
+                    color="#C1121F"
+                    style={styles.carregando}
+                  />
+                ) : null
+              }
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+      </RotaPermissao>
+    </>
   );
 }
 
