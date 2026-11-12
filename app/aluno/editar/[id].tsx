@@ -26,6 +26,8 @@ import {
   excluirFotoAluno,
 } from "@/services/alunoService";
 
+import { buscarEnderecoPorCep } from "@/services/cepService";
+
 import {
   formatarCep,
   formatarCpf,
@@ -56,6 +58,11 @@ export default function EditarAlunoScreen() {
   const [cep, setCep] = useState("");
   const [pontoReferencia, setPontoReferencia] = useState("");
 
+  const [cidadeId, setCidadeId] = useState<number | null>(null);
+  const [buscandoCep, setBuscandoCep] = useState(false);
+
+  const [cepValido, setCepValido] = useState(false);
+
   const [fotoUri, setFotoUri] = useState<string | null>(null);
   const [novaFoto, setNovaFoto] = useState<string | null>(null);
 
@@ -78,9 +85,11 @@ export default function EditarAlunoScreen() {
       setRua(resposta.endereco?.rua ?? "");
       setNumero(resposta.endereco?.numero ?? "");
       setBairro(resposta.endereco?.bairro ?? "");
+      setCidadeId(resposta.endereco?.cidadeId ?? null);
       setCidade(resposta.endereco?.cidade ?? "");
-      setEstado(resposta.endereco?.estado ?? "");
+      setEstado(resposta.endereco?.uf ?? "");
       setCep(formatarCep(resposta.endereco?.cep ?? ""));
+      setCepValido(true);
       setPontoReferencia(resposta.endereco?.pontoReferencia ?? "");
 
       if (resposta.possuiFoto) {
@@ -111,6 +120,50 @@ export default function EditarAlunoScreen() {
       }
     } finally {
       setCarregando(false);
+    }
+  }
+
+  async function handleBuscarCep() {
+    const cepLimpo = cep.replace(/\D/g, "");
+
+    setCepValido(false);
+    setCidadeId(null);
+
+    if (cepLimpo.length !== 8) {
+      if (cepLimpo.length > 0) {
+        Alert.alert("Atenção", "Informe um CEP válido com 8 dígitos.");
+      }
+      return;
+    }
+
+    try {
+      setBuscandoCep(true);
+
+      const endereco = await buscarEnderecoPorCep(cepLimpo);
+
+      if (!endereco.cidadeId) {
+        throw new Error("CEP não encontrado ou inválido.");
+      }
+
+      setCidadeId(endereco.cidadeId);
+      setRua(endereco.logradouro || "");
+      setBairro(endereco.bairro || "");
+      setCidade(endereco.cidade || "");
+      setEstado(endereco.uf || "");
+
+      setCepValido(true);
+    } catch (error) {
+      setCepValido(false);
+      setCidadeId(null);
+
+      Alert.alert(
+        "Erro",
+        error instanceof Error
+          ? error.message
+          : "Não foi possível localizar o CEP.",
+      );
+    } finally {
+      setBuscandoCep(false);
     }
   }
 
@@ -220,18 +273,18 @@ export default function EditarAlunoScreen() {
       return;
     }
 
-    if (!cidade.trim()) {
-      Alert.alert("Atenção", "Informe a cidade.");
+    const cepLimpo = cep.replace(/\D/g, "");
+
+    if (cepLimpo.length !== 8) {
+      Alert.alert("Atenção", "Informe um CEP válido com 8 dígitos.");
       return;
     }
 
-    if (!estado.trim()) {
-      Alert.alert("Atenção", "Informe o estado.");
-      return;
-    }
-
-    if (!cep.trim()) {
-      Alert.alert("Atenção", "Informe o CEP.");
+    if (!cepValido || !cidadeId) {
+      Alert.alert(
+        "Atenção",
+        "Consulte um CEP válido antes de salvar as alterações.",
+      );
       return;
     }
 
@@ -250,9 +303,8 @@ export default function EditarAlunoScreen() {
           rua: rua.trim(),
           numero: numero.trim(),
           bairro: bairro.trim(),
-          cidade: cidade.trim(),
-          estado: estado.trim(),
-          cep: cep.replace(/\D/g, ""),
+          cidadeId: cidadeId,
+          cep: cepLimpo,
           pontoReferencia: pontoReferencia.trim(),
         },
       });
@@ -499,17 +551,32 @@ export default function EditarAlunoScreen() {
               <TextInput
                 style={styles.input}
                 value={cep}
-                onChangeText={(texto) => setCep(formatarCep(texto))}
+                onChangeText={(texto) => {
+                  setCep(formatarCep(texto));
+                  setCepValido(false);
+                  setCidadeId(null);
+                }}
+                onBlur={handleBuscarCep}
                 placeholder="00000-000"
                 placeholderTextColor="#777777"
                 keyboardType="numeric"
               />
+
+              {buscandoCep && (
+                <View style={styles.buscandoCep}>
+                  <ActivityIndicator size="small" color="#C1121F" />
+                  <Text style={styles.buscandoCepTexto}>
+                    Buscando endereço...
+                  </Text>
+                </View>
+              )}
 
               <Text style={styles.label}>Rua *</Text>
 
               <TextInput
                 style={styles.input}
                 value={rua}
+                editable={false}
                 onChangeText={setRua}
                 placeholder="Nome da rua"
                 placeholderTextColor="#777777"
@@ -536,6 +603,7 @@ export default function EditarAlunoScreen() {
                   <TextInput
                     style={styles.input}
                     value={bairro}
+                    editable={false}
                     onChangeText={setBairro}
                     placeholder="Bairro"
                     placeholderTextColor="#777777"
@@ -551,6 +619,7 @@ export default function EditarAlunoScreen() {
                   <TextInput
                     style={styles.input}
                     value={cidade}
+                    editable={false}
                     onChangeText={setCidade}
                     placeholder="Cidade"
                     placeholderTextColor="#777777"
@@ -564,6 +633,7 @@ export default function EditarAlunoScreen() {
                   <TextInput
                     style={styles.input}
                     value={estado}
+                    editable={false}
                     onChangeText={setEstado}
                     placeholder="BA"
                     placeholderTextColor="#777777"
@@ -659,6 +729,18 @@ const styles = StyleSheet.create({
   tela: {
     flex: 1,
     backgroundColor: "#0A0A0A",
+  },
+
+  buscandoCep: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
+
+  buscandoCepTexto: {
+    color: "#888888",
+    marginLeft: 8,
+    fontSize: 13,
   },
 
   container: {

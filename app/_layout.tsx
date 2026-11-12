@@ -26,6 +26,14 @@ export default function RootLayout() {
         />
 
         <Stack.Screen
+          name="instalacao"
+          options={{
+            title: "Instalação",
+            headerBackVisible: false,
+          }}
+        />
+
+        <Stack.Screen
           name="financeiro/index"
           options={{
             title: "Financeiro",

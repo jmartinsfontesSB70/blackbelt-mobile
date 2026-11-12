@@ -38,6 +38,8 @@ import {
   excluirFotoProfessor,
 } from "@/services/professorService";
 
+import { buscarEnderecoPorCep } from "@/services/cepService";
+
 export default function EditarProfessorScreen() {
   const router = useRouter();
 
@@ -59,6 +61,11 @@ export default function EditarProfessorScreen() {
   const [estado, setEstado] = useState("");
   const [cep, setCep] = useState("");
   const [pontoReferencia, setPontoReferencia] = useState("");
+
+  const [cidadeId, setCidadeId] = useState<number | null>(null);
+  const [buscandoCep, setBuscandoCep] = useState(false);
+
+  const [cepValido, setCepValido] = useState(false);
 
   const [fotoUri, setFotoUri] = useState<string | null>(null);
   const [novaFoto, setNovaFoto] = useState<string | null>(null);
@@ -113,8 +120,9 @@ export default function EditarProfessorScreen() {
         setRua(professor.endereco.rua ?? "");
         setNumero(professor.endereco.numero ?? "");
         setBairro(professor.endereco.bairro ?? "");
+        setCidadeId(professor.endereco.cidadeId ?? null);
         setCidade(professor.endereco.cidade ?? "");
-        setEstado(professor.endereco.estado ?? "");
+        setEstado(professor.endereco.uf ?? "");
 
         setCep(
           professor.endereco.cep ? formatarCep(professor.endereco.cep) : "",
@@ -148,6 +156,39 @@ export default function EditarProfessorScreen() {
       }
     } finally {
       setCarregando(false);
+    }
+  }
+
+  async function handleBuscarCep() {
+    const cepLimpo = cep.replace(/\D/g, "");
+
+    setCepValido(false);
+
+    if (cepLimpo.length !== 8) {
+      return;
+    }
+
+    try {
+      setBuscandoCep(true);
+
+      const endereco = await buscarEnderecoPorCep(cepLimpo);
+
+      setRua(endereco.logradouro || "");
+      setBairro(endereco.bairro || "");
+      setCidade(endereco.cidade || "");
+      setEstado(endereco.uf || "");
+      setCidadeId(endereco.cidadeId);
+
+      setCepValido(true);
+    } catch (error) {
+      Alert.alert(
+        "Erro",
+        error instanceof Error
+          ? error.message
+          : "Não foi possível localizar o CEP.",
+      );
+    } finally {
+      setBuscandoCep(false);
     }
   }
 
@@ -303,18 +344,28 @@ export default function EditarProfessorScreen() {
       return;
     }
 
-    if (!cidade.trim()) {
-      Alert.alert("Atenção", "Informe a cidade.");
-      return;
-    }
-
-    if (!estado.trim()) {
-      Alert.alert("Atenção", "Informe o estado.");
+    if (!cidadeId) {
+      Alert.alert(
+        "Atenção",
+        "Informe um CEP válido para identificar a cidade.",
+      );
       return;
     }
 
     if (!cep.trim()) {
       Alert.alert("Atenção", "Informe o CEP.");
+      return;
+    }
+
+    const cepLimpo = cep.replace(/\D/g, "");
+
+    if (cepLimpo.length !== 8) {
+      Alert.alert("Atenção", "Informe um CEP válido com 8 dígitos.");
+      return;
+    }
+
+    if (!cepValido) {
+      Alert.alert("Atenção", "Informe um CEP válido antes de salvar.");
       return;
     }
 
@@ -339,8 +390,7 @@ export default function EditarProfessorScreen() {
           rua: rua.trim(),
           numero: numero.trim(),
           bairro: bairro.trim(),
-          cidade: cidade.trim(),
-          estado: estado.trim(),
+          cidadeId: cidadeId,
           cep: cep.replace(/\D/g, ""),
           pontoReferencia: pontoReferencia.trim(),
         },
@@ -631,17 +681,31 @@ export default function EditarProfessorScreen() {
               <TextInput
                 style={styles.input}
                 value={cep}
-                onChangeText={(texto) => setCep(formatarCep(texto))}
+                onChangeText={(texto) => {
+                  setCep(formatarCep(texto));
+                  setCepValido(false);
+                }}
+                onBlur={handleBuscarCep}
                 placeholder="00000-000"
                 placeholderTextColor="#777777"
                 keyboardType="numeric"
               />
+
+              {buscandoCep && (
+                <View style={styles.buscandoCep}>
+                  <ActivityIndicator size="small" color="#C1121F" />
+                  <Text style={styles.buscandoCepTexto}>
+                    Buscando endereço...
+                  </Text>
+                </View>
+              )}
 
               <Text style={styles.label}>Rua *</Text>
 
               <TextInput
                 style={styles.input}
                 value={rua}
+                editable={false}
                 onChangeText={setRua}
                 placeholder="Nome da rua"
                 placeholderTextColor="#777777"
@@ -668,6 +732,7 @@ export default function EditarProfessorScreen() {
                   <TextInput
                     style={styles.input}
                     value={bairro}
+                    editable={false}
                     onChangeText={setBairro}
                     placeholder="Bairro"
                     placeholderTextColor="#777777"
@@ -683,6 +748,7 @@ export default function EditarProfessorScreen() {
                   <TextInput
                     style={styles.input}
                     value={cidade}
+                    editable={false}
                     onChangeText={setCidade}
                     placeholder="Cidade"
                     placeholderTextColor="#777777"
@@ -696,6 +762,7 @@ export default function EditarProfessorScreen() {
                   <TextInput
                     style={styles.input}
                     value={estado}
+                    editable={false}
                     onChangeText={setEstado}
                     placeholder="BA"
                     placeholderTextColor="#777777"
@@ -773,6 +840,18 @@ const styles = StyleSheet.create({
   tela: {
     flex: 1,
     backgroundColor: "#0A0A0A",
+  },
+
+  buscandoCep: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
+
+  buscandoCepTexto: {
+    color: "#888888",
+    marginLeft: 8,
+    fontSize: 13,
   },
 
   container: {

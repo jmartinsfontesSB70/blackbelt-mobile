@@ -21,10 +21,13 @@ import {
   type AcademiaRequest,
 } from "@/services/academiaService";
 
+import { buscarEnderecoPorCep } from "@/services/cepService";
+
 const enderecoInicial = {
   rua: "",
   numero: "",
   bairro: "",
+  cidadeId: 0,
   cidade: "",
   estado: "",
   cep: "",
@@ -69,6 +72,9 @@ export default function InstalacaoScreen() {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
   const [dataExpiracao, setDataExpiracao] = useState("");
+
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [cepValido, setCepValido] = useState(false);
 
   useEffect(() => {
     async function verificarInstalacao() {
@@ -115,6 +121,55 @@ export default function InstalacaoScreen() {
     }));
   }
 
+  async function handleBuscarCep() {
+    const cepLimpo = academia.endereco.cep.replace(/\D/g, "");
+
+    setCepValido(false);
+
+    if (cepLimpo.length !== 8) {
+      if (cepLimpo.length > 0) {
+        setErro("Informe um CEP válido com 8 dígitos.");
+      }
+      return;
+    }
+
+    try {
+      setErro("");
+      setBuscandoCep(true);
+
+      const endereco = await buscarEnderecoPorCep(cepLimpo);
+
+      if (!endereco.cidadeId) {
+        throw new Error("CEP não encontrado ou inválido.");
+      }
+
+      setAcademia((atual) => ({
+        ...atual,
+        endereco: {
+          ...atual.endereco,
+          rua: endereco.logradouro || "",
+          bairro: endereco.bairro || "",
+          cidadeId: endereco.cidadeId,
+          cidade: endereco.cidade || "",
+          estado: endereco.uf || "",
+          cep: atual.endereco.cep,
+        },
+      }));
+
+      setCepValido(true);
+    } catch (error) {
+      setCepValido(false);
+
+      setErro(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível localizar o CEP.",
+      );
+    } finally {
+      setBuscandoCep(false);
+    }
+  }
+
   async function selecionarLogo() {
     try {
       setErro("");
@@ -159,19 +214,34 @@ export default function InstalacaoScreen() {
   }
 
   async function cadastrar() {
+    const cepLimpo = academia.endereco.cep.replace(/\D/g, "");
+
+    if (cepLimpo.length !== 8) {
+      setErro("Informe um CEP válido com 8 dígitos.");
+      return;
+    }
+
+    if (!cepValido) {
+      setErro("Consulte um CEP válido antes de cadastrar a academia.");
+      return;
+    }
+
     const camposObrigatorios = [
       academia.nome,
       academia.responsavel,
       academia.endereco.rua,
       academia.endereco.numero,
       academia.endereco.bairro,
-      academia.endereco.cidade,
-      academia.endereco.estado,
       academia.endereco.cep,
     ];
 
     if (camposObrigatorios.some((valor) => !valor.trim())) {
       setErro("Preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    if (!academia.endereco.cidadeId) {
+      setErro("Consulte um CEP válido antes de cadastrar a academia.");
       return;
     }
 
@@ -210,6 +280,8 @@ export default function InstalacaoScreen() {
       teclado?: "default" | "numeric";
       maxLength?: number;
       maiusculas?: boolean;
+      editable?: boolean;
+      onBlur?: () => void;
     } = {},
   ) {
     return (
@@ -228,7 +300,8 @@ export default function InstalacaoScreen() {
           keyboardType={opcoes.teclado ?? "default"}
           maxLength={opcoes.maxLength}
           autoCapitalize={opcoes.maiusculas ? "characters" : "sentences"}
-          editable={!enviando}
+          editable={opcoes.editable ?? !enviando}
+          onBlur={opcoes.onBlur}
         />
       </View>
     );
@@ -285,7 +358,7 @@ export default function InstalacaoScreen() {
       contentContainerStyle={styles.conteudo}
       enableOnAndroid={true}
       enableAutomaticScroll={true}
-      extraScrollHeight={40}
+      extraScrollHeight={120}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       keyboardOpeningTime={0}
@@ -349,37 +422,72 @@ export default function InstalacaoScreen() {
 
         <Text style={styles.secao}>Endereço</Text>
 
-        {campo("Rua", academia.endereco.rua, (v) => alterarEndereco("rua", v))}
-
-        {campo("Número", academia.endereco.numero, (v) =>
-          alterarEndereco("numero", v),
-        )}
-
         {campo(
           "CEP",
           academia.endereco.cep,
-          (v) => alterarEndereco("cep", mascararCep(v)),
+          (v) => {
+            alterarEndereco("cep", mascararCep(v));
+            setCepValido(false);
+            setErro("");
+          },
           true,
           {
             teclado: "numeric",
             maxLength: 9,
+            onBlur: () => {
+              void handleBuscarCep();
+            },
           },
         )}
 
-        {campo("Bairro", academia.endereco.bairro, (v) =>
-          alterarEndereco("bairro", v),
+        {buscandoCep && (
+          <View style={styles.buscandoCep}>
+            <ActivityIndicator size="small" color="#C1121F" />
+            <Text style={styles.textoAuxiliar}>Buscando endereço...</Text>
+          </View>
         )}
 
-        {campo("Cidade", academia.endereco.cidade, (v) =>
-          alterarEndereco("cidade", v),
+        {campo(
+          "Rua",
+          academia.endereco.rua,
+          (v) => alterarEndereco("rua", v),
+          true,
+          { editable: false },
+        )}
+
+        {campo(
+          "Número",
+          academia.endereco.numero,
+          (valor) => {
+            const somenteNumeros = valor.replace(/[^0-9]/g, "");
+            alterarEndereco("numero", somenteNumeros);
+          },
+          true,
+          { teclado: "numeric" },
+        )}
+
+        {campo(
+          "Bairro",
+          academia.endereco.bairro,
+          (v) => alterarEndereco("bairro", v),
+          true,
+          { editable: false },
+        )}
+
+        {campo(
+          "Cidade",
+          academia.endereco.cidade,
+          (v) => alterarEndereco("cidade", v),
+          true,
+          { editable: false },
         )}
 
         {campo(
           "Estado (UF)",
           academia.endereco.estado,
-          (v) => alterarEndereco("estado", v.toUpperCase()),
+          (v) => alterarEndereco("estado", v),
           true,
-          { maxLength: 2, maiusculas: true },
+          { editable: false },
         )}
 
         {campo(
@@ -415,6 +523,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0A0A0A",
+  },
+
+  buscandoCep: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
 
   conteudo: {

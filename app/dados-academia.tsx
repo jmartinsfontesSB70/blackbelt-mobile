@@ -22,8 +22,17 @@ import {
   type AcademiaRequest,
 } from "../services/academiaService";
 
+import { buscarEnderecoPorCep } from "@/services/cepService";
+
 import Permissao from "@/components/Permissao";
 import RotaPermissao from "@/components/RotaPermissao";
+
+type AcademiaFormulario = Omit<AcademiaRequest, "endereco"> & {
+  endereco: AcademiaRequest["endereco"] & {
+    cidade: string;
+    estado: string;
+  };
+};
 
 type LogoSelecionada = {
   uri: string;
@@ -31,7 +40,7 @@ type LogoSelecionada = {
   type: string;
 };
 
-const academiaInicial: AcademiaRequest = {
+const academiaInicial: AcademiaFormulario = {
   nome: "",
   responsavel: "",
   cnpj: "",
@@ -39,6 +48,7 @@ const academiaInicial: AcademiaRequest = {
     rua: "",
     numero: "",
     bairro: "",
+    cidadeId: 0,
     cidade: "",
     estado: "",
     cep: "",
@@ -79,7 +89,7 @@ function arrayBufferParaBase64(buffer: ArrayBuffer): string {
 }
 
 export default function DadosAcademiaScreen() {
-  const [academia, setAcademia] = useState<AcademiaRequest>(academiaInicial);
+  const [academia, setAcademia] = useState<AcademiaFormulario>(academiaInicial);
 
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -90,6 +100,9 @@ export default function DadosAcademiaScreen() {
   const [logoAtual, setLogoAtual] = useState<string | null>(null);
   const [logoSelecionada, setLogoSelecionada] =
     useState<LogoSelecionada | null>(null);
+
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [cepValido, setCepValido] = useState(false);
 
   useEffect(() => {
     carregarAcademia();
@@ -109,12 +122,20 @@ export default function DadosAcademiaScreen() {
           rua: resposta.endereco?.rua ?? "",
           numero: resposta.endereco?.numero ?? "",
           bairro: resposta.endereco?.bairro ?? "",
+          cidadeId: resposta.endereco?.cidadeId ?? 0,
           cidade: resposta.endereco?.cidade ?? "",
-          estado: resposta.endereco?.estado ?? "",
+          estado: resposta.endereco?.uf ?? "",
           cep: mascararCep(resposta.endereco?.cep ?? ""),
           pontoReferencia: resposta.endereco?.pontoReferencia ?? "",
         },
       });
+
+      setCepValido(
+        Boolean(
+          resposta.endereco?.cidadeId &&
+          resposta.endereco?.cep?.replace(/\D/g, "").length === 8,
+        ),
+      );
 
       setPossuiLogo(resposta.possuiLogo);
 
@@ -153,8 +174,8 @@ export default function DadosAcademiaScreen() {
   }
 
   function atualizarEndereco(
-    campo: keyof AcademiaRequest["endereco"],
-    valor: string,
+    campo: keyof AcademiaFormulario["endereco"],
+    valor: string | number,
   ) {
     setAcademia((atual) => ({
       ...atual,
@@ -179,22 +200,31 @@ export default function DadosAcademiaScreen() {
       return;
     }
 
+    const cepLimpo = academia.endereco.cep.replace(/\D/g, "");
+
+    if (cepLimpo.length !== 8) {
+      setErro("Informe um CEP válido com 8 dígitos.");
+      return;
+    }
+
+    if (!cepValido || !academia.endereco.cidadeId) {
+      setErro("Consulte um CEP válido antes de salvar os dados.");
+      return;
+    }
+
     try {
       setSalvando(true);
 
       const request: AcademiaRequest = {
-        ...academia,
         nome: academia.nome.trim(),
         responsavel: academia.responsavel.trim(),
         cnpj: academia.cnpj.replace(/\D/g, ""),
         endereco: {
-          ...academia.endereco,
           rua: academia.endereco.rua.trim(),
           numero: academia.endereco.numero.trim(),
           bairro: academia.endereco.bairro.trim(),
-          cidade: academia.endereco.cidade.trim(),
-          estado: academia.endereco.estado.trim(),
-          cep: academia.endereco.cep.replace(/\D/g, ""),
+          cidadeId: academia.endereco.cidadeId,
+          cep: cepLimpo,
           pontoReferencia: academia.endereco.pontoReferencia.trim(),
         },
       };
@@ -209,6 +239,54 @@ export default function DadosAcademiaScreen() {
       );
     } finally {
       setSalvando(false);
+    }
+  }
+
+  async function handleBuscarCep() {
+    const cepLimpo = academia.endereco.cep.replace(/\D/g, "");
+
+    setCepValido(false);
+
+    if (cepLimpo.length !== 8) {
+      if (cepLimpo.length > 0) {
+        setErro("Informe um CEP válido com 8 dígitos.");
+      }
+      return;
+    }
+
+    try {
+      setErro("");
+      setBuscandoCep(true);
+
+      const endereco = await buscarEnderecoPorCep(cepLimpo);
+
+      if (!endereco.cidadeId) {
+        throw new Error("CEP não encontrado ou inválido.");
+      }
+
+      setAcademia((atual) => ({
+        ...atual,
+        endereco: {
+          ...atual.endereco,
+          rua: endereco.logradouro || "",
+          bairro: endereco.bairro || "",
+          cidadeId: endereco.cidadeId,
+          cidade: endereco.cidade || "",
+          estado: endereco.uf || "",
+        },
+      }));
+
+      setCepValido(true);
+    } catch (error) {
+      setCepValido(false);
+
+      setErro(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível localizar o CEP.",
+      );
+    } finally {
+      setBuscandoCep(false);
     }
   }
 
@@ -297,6 +375,8 @@ export default function DadosAcademiaScreen() {
       placeholder?: string;
       teclado?: "default" | "numeric" | "phone-pad";
       maiusculas?: "none" | "sentences" | "words" | "characters";
+      editable?: boolean;
+      onBlur?: () => void;
     },
   ) {
     return (
@@ -311,7 +391,8 @@ export default function DadosAcademiaScreen() {
           placeholderTextColor="#777777"
           keyboardType={opcoes?.teclado ?? "default"}
           autoCapitalize={opcoes?.maiusculas ?? "sentences"}
-          editable={!salvando}
+          editable={opcoes?.editable ?? !salvando}
+          onBlur={opcoes?.onBlur}
         />
       </View>
     );
@@ -352,7 +433,7 @@ export default function DadosAcademiaScreen() {
 
         <KeyboardAvoidingView
           style={styles.tela}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
           <ScrollView
             contentContainerStyle={styles.conteudo}
@@ -443,34 +524,78 @@ export default function DadosAcademiaScreen() {
 
               <Text style={styles.secao}>Endereço</Text>
 
-              {campo("Rua", academia.endereco.rua, (valor) =>
-                atualizarEndereco("rua", valor),
-              )}
-
-              {campo("Número", academia.endereco.numero, (valor) =>
-                atualizarEndereco("numero", valor),
-              )}
-
               {campo(
                 "CEP",
                 academia.endereco.cep,
-                (valor) => atualizarEndereco("cep", mascararCep(valor)),
-                { placeholder: "00000-000", teclado: "numeric" },
+                (valor) => {
+                  atualizarEndereco("cep", mascararCep(valor));
+                  setCepValido(false);
+                  setErro("");
+                  setSucesso("");
+
+                  setAcademia((atual) => ({
+                    ...atual,
+                    endereco: {
+                      ...atual.endereco,
+                      cidadeId: 0,
+                      cidade: "",
+                      estado: "",
+                      rua: "",
+                      bairro: "",
+                    },
+                  }));
+                },
+                {
+                  placeholder: "00000-000",
+                  teclado: "numeric",
+                  onBlur: () => {
+                    void handleBuscarCep();
+                  },
+                },
               )}
 
-              {campo("Bairro", academia.endereco.bairro, (valor) =>
-                atualizarEndereco("bairro", valor),
+              {buscandoCep && (
+                <View style={styles.buscandoCep}>
+                  <ActivityIndicator size="small" color="#C1121F" />
+                  <Text style={styles.textoBuscandoCep}>
+                    Buscando endereço...
+                  </Text>
+                </View>
               )}
 
-              {campo("Cidade", academia.endereco.cidade, (valor) =>
-                atualizarEndereco("cidade", valor),
+              {campo(
+                "Rua",
+                academia.endereco.rua,
+                (valor) => atualizarEndereco("rua", valor),
+                { editable: false },
+              )}
+
+              {campo(
+                "Número",
+                academia.endereco.numero,
+                (valor) =>
+                  atualizarEndereco("numero", valor.replace(/\D/g, "")),
+                { teclado: "numeric" },
+              )}
+              {campo(
+                "Bairro",
+                academia.endereco.bairro,
+                (valor) => atualizarEndereco("bairro", valor),
+                { editable: false },
+              )}
+
+              {campo(
+                "Cidade",
+                academia.endereco.cidade,
+                (valor) => atualizarEndereco("cidade", valor),
+                { editable: false },
               )}
 
               {campo(
                 "Estado",
                 academia.endereco.estado,
                 (valor) => atualizarEndereco("estado", valor),
-                { maiusculas: "characters" },
+                { maiusculas: "characters", editable: false },
               )}
 
               {campo(
@@ -506,6 +631,17 @@ const styles = StyleSheet.create({
   tela: {
     flex: 1,
     backgroundColor: "#121212",
+  },
+
+  buscandoCep: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  textoBuscandoCep: {
+    color: "#888888",
+    marginLeft: 8,
+    fontSize: 13,
   },
   telaCarregando: {
     flex: 1,

@@ -27,6 +27,7 @@ import {
 } from "@/utils/masks";
 
 import { criarAluno, enviarFotoAluno } from "@/services/alunoService";
+import { buscarEnderecoPorCep } from "@/services/cepService";
 
 export default function NovoAlunoScreen() {
   const router = useRouter();
@@ -40,6 +41,7 @@ export default function NovoAlunoScreen() {
   const [rua, setRua] = useState("");
   const [numero, setNumero] = useState("");
   const [bairro, setBairro] = useState("");
+  const [cidadeId, setCidadeId] = useState<number | null>(null);
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
   const [cep, setCep] = useState("");
@@ -48,6 +50,9 @@ export default function NovoAlunoScreen() {
   const [foto, setFoto] = useState<string | null>(null);
 
   const [salvando, setSalvando] = useState(false);
+
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [cepValido, setCepValido] = useState(false);
 
   async function selecionarFoto() {
     try {
@@ -80,6 +85,50 @@ export default function NovoAlunoScreen() {
     }
   }
 
+  async function handleBuscarCep() {
+    const cepLimpo = cep.replace(/\D/g, "");
+
+    setCepValido(false);
+    setCidadeId(null);
+
+    if (cepLimpo.length !== 8) {
+      if (cepLimpo.length > 0) {
+        Alert.alert("Atenção", "Informe um CEP válido com 8 dígitos.");
+      }
+      return;
+    }
+
+    try {
+      setBuscandoCep(true);
+
+      const endereco = await buscarEnderecoPorCep(cepLimpo);
+
+      if (!endereco.cidadeId) {
+        throw new Error("CEP não encontrado ou inválido.");
+      }
+
+      setRua(endereco.logradouro || "");
+      setBairro(endereco.bairro || "");
+      setCidadeId(endereco.cidadeId);
+      setCidade(endereco.cidade);
+      setEstado(endereco.uf);
+
+      setCepValido(true);
+    } catch (error) {
+      setCepValido(false);
+      setCidadeId(null);
+
+      Alert.alert(
+        "Erro",
+        error instanceof Error
+          ? error.message
+          : "Não foi possível localizar o CEP.",
+      );
+    } finally {
+      setBuscandoCep(false);
+    }
+  }
+
   async function salvar() {
     if (!nome.trim()) {
       Alert.alert("Atenção", "Informe o nome do aluno.");
@@ -102,6 +151,26 @@ export default function NovoAlunoScreen() {
       Alert.alert(
         "Atenção",
         "Informe uma data de nascimento válida no formato DD/MM/AAAA.",
+      );
+      return;
+    }
+
+    if (!cep.trim()) {
+      Alert.alert("Atenção", "Informe o CEP.");
+      return;
+    }
+
+    const cepLimpo = cep.replace(/\D/g, "");
+
+    if (cepLimpo.length !== 8) {
+      Alert.alert("Atenção", "Informe um CEP válido com 8 dígitos.");
+      return;
+    }
+
+    if (!cepValido || !cidadeId) {
+      Alert.alert(
+        "Atenção",
+        "Consulte um CEP válido antes de cadastrar o aluno.",
       );
       return;
     }
@@ -131,11 +200,6 @@ export default function NovoAlunoScreen() {
       return;
     }
 
-    if (!cep.trim()) {
-      Alert.alert("Atenção", "Informe o CEP.");
-      return;
-    }
-
     try {
       setSalvando(true);
 
@@ -151,9 +215,8 @@ export default function NovoAlunoScreen() {
           rua: rua.trim(),
           numero: numero.trim(),
           bairro: bairro.trim(),
-          cidade: cidade.trim(),
-          estado: estado.trim(),
-          cep: cep.replace(/\D/g, ""),
+          cidadeId: cidadeId,
+          cep: cepLimpo,
           pontoReferencia: pontoReferencia.trim(),
         },
       });
@@ -340,17 +403,39 @@ export default function NovoAlunoScreen() {
               <TextInput
                 style={styles.input}
                 value={cep}
-                onChangeText={(texto) => setCep(formatarCep(texto))}
+                onChangeText={(texto) => {
+                  setCep(formatarCep(texto));
+                  setCepValido(false);
+                  setCidadeId(null);
+                }}
+                onBlur={handleBuscarCep}
                 placeholder="00000-000"
                 placeholderTextColor="#777777"
                 keyboardType="numeric"
               />
+
+              {buscandoCep && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 8,
+                  }}
+                >
+                  <ActivityIndicator size="small" color="#C1121F" />
+
+                  <Text style={{ color: "#888888", marginLeft: 8 }}>
+                    Buscando endereço...
+                  </Text>
+                </View>
+              )}
 
               <Text style={styles.label}>Rua *</Text>
 
               <TextInput
                 style={styles.input}
                 value={rua}
+                editable={false}
                 onChangeText={setRua}
                 placeholder="Nome da rua"
                 placeholderTextColor="#777777"
@@ -377,6 +462,7 @@ export default function NovoAlunoScreen() {
                   <TextInput
                     style={styles.input}
                     value={bairro}
+                    editable={false}
                     onChangeText={setBairro}
                     placeholder="Bairro"
                     placeholderTextColor="#777777"
@@ -392,6 +478,7 @@ export default function NovoAlunoScreen() {
                   <TextInput
                     style={styles.input}
                     value={cidade}
+                    editable={false}
                     onChangeText={setCidade}
                     placeholder="Cidade"
                     placeholderTextColor="#777777"
@@ -405,6 +492,7 @@ export default function NovoAlunoScreen() {
                   <TextInput
                     style={styles.input}
                     value={estado}
+                    editable={false}
                     onChangeText={setEstado}
                     placeholder="BA"
                     placeholderTextColor="#777777"

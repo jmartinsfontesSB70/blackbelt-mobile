@@ -280,7 +280,7 @@ export default function ProfessorDetalhesScreen() {
                   <Text style={styles.label}>Cidade / Estado</Text>
 
                   <Text style={styles.valor}>
-                    {professor.endereco.cidade} - {professor.endereco.estado}
+                    {professor.endereco.cidade} - {professor.endereco.uf}
                   </Text>
                 </View>
 

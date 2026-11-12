@@ -292,7 +292,7 @@ export default function AlunoDetalhesScreen() {
                   <Text style={styles.label}>Cidade / Estado</Text>
 
                   <Text style={styles.valor}>
-                    {aluno.endereco.cidade} - {aluno.endereco.estado}
+                    {aluno.endereco.cidade} - {aluno.endereco.uf}
                   </Text>
                 </View>
 

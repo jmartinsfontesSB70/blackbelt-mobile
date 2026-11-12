@@ -1,11 +1,22 @@
 import { apiFetch } from "./api";
 
-export interface EnderecoAcademia {
+export interface EnderecoAcademiaRequest {
   rua: string;
   numero: string;
   bairro: string;
+  cidadeId: number;
+  cep: string;
+  pontoReferencia: string;
+}
+
+export interface EnderecoAcademiaResponse {
+  id: number;
+  rua: string;
+  numero: string;
+  bairro: string;
+  cidadeId: number;
   cidade: string;
-  estado: string;
+  uf: string;
   cep: string;
   pontoReferencia: string;
 }
@@ -14,7 +25,7 @@ export interface AcademiaRequest {
   nome: string;
   responsavel: string;
   cnpj: string;
-  endereco: EnderecoAcademia;
+  endereco: EnderecoAcademiaRequest;
 }
 
 export interface AcademiaResponse {
@@ -22,7 +33,7 @@ export interface AcademiaResponse {
   nome: string;
   responsavel: string;
   cnpj: string | null;
-  endereco: EnderecoAcademia | null;
+  endereco: EnderecoAcademiaResponse | null;
   dataCadastro: string;
   dataExpiracao: string;
   possuiLogo: boolean;
